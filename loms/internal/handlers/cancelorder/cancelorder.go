@@ -1,4 +1,4 @@
-package orderpayed
+package cancelorder
 
 import (
 	"context"
@@ -30,6 +30,6 @@ func New() *Handler {
 }
 
 func (h *Handler) Handle(ctx context.Context, request Request) (Response, error) {
-	log.Printf("order payed: %+v", request)
+	log.Printf("cancel order: %+v", request)
 	return Response{}, nil
 }
