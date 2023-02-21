@@ -1,14 +1,9 @@
 package loms
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"fmt"
-	"net/http"
 	"route256/checkout/internal/domain"
-
-	"github.com/pkg/errors"
+	"route256/libs/clientwrapper"
 )
 
 type Client struct {
@@ -41,30 +36,9 @@ type StockResponse struct {
 func (c *Client) Stocks(ctx context.Context, sku uint32) ([]domain.Stock, error) {
 	request := StocksRequest{SKU: sku}
 
-	rawJSON, err := json.Marshal(request)
+	response, err := clientwrapper.Do[StocksRequest, StockResponse](ctx, c.urlStocks, request)
 	if err != nil {
-		return nil, errors.Wrap(err, "marshaling json")
-	}
-
-	httpRequest, err := http.NewRequestWithContext(ctx, http.MethodPost, c.urlStocks, bytes.NewBuffer(rawJSON))
-	if err != nil {
-		return nil, errors.Wrap(err, "creating http request")
-	}
-
-	httpResponse, err := http.DefaultClient.Do(httpRequest)
-	if err != nil {
-		return nil, errors.Wrap(err, "calling http")
-	}
-	defer httpResponse.Body.Close()
-
-	if httpResponse.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("wrong status code: %d, %s", httpResponse.StatusCode, c.urlStocks)
-	}
-
-	var response StockResponse
-	err = json.NewDecoder(httpResponse.Body).Decode(&response)
-	if err != nil {
-		return nil, errors.Wrap(err, "decoding json")
+		return nil, err
 	}
 
 	stocks := make([]domain.Stock, 0, len(response.Stocks))
