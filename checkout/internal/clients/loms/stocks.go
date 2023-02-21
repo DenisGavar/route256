@@ -6,20 +6,6 @@ import (
 	"route256/libs/clientwrapper"
 )
 
-type Client struct {
-	url string
-
-	urlStocks string
-}
-
-func New(url string) *Client {
-	return &Client{
-		url: url,
-
-		urlStocks: url + "/stocks",
-	}
-}
-
 type StocksRequest struct {
 	SKU uint32 `json:"sku"`
 }
