@@ -7,13 +7,22 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type Services struct {
-	Loms string `yaml:"loms"`
+type ConfigStruct struct {
+	Services Services `yaml:"services"`
 }
 
-type ConfigStruct struct {
-	Token    string   `yaml:"token"`
-	Services Services `yaml:"services"`
+type Services struct {
+	Loms           Loms           `yaml:"loms"`
+	ProductService ProductService `yaml:"productService"`
+}
+
+type Loms struct {
+	Url string `yaml:"url"`
+}
+
+type ProductService struct {
+	Url   string `yaml:"url"`
+	Token string `yaml:"token"`
 }
 
 var ConfigData ConfigStruct
