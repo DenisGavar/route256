@@ -1,20 +1,15 @@
-package addtocart
+package deletefromcart
 
 import (
 	"context"
 	"errors"
 	"log"
-	"route256/checkout/internal/domain"
 )
 
-type Handler struct {
-	businessLogic *domain.Model
-}
+type Handler struct{}
 
-func New(businessLogic *domain.Model) *Handler {
-	return &Handler{
-		businessLogic: businessLogic,
-	}
+func New() *Handler {
+	return &Handler{}
 }
 
 type Request struct {
@@ -45,14 +40,7 @@ func (r Request) Validate() error {
 }
 
 func (h *Handler) Handle(ctx context.Context, req Request) (Response, error) {
-	log.Printf("addToCart: %+v", req)
+	log.Printf("deleteFromCart: %+v", req)
 
-	var response Response
-
-	err := h.businessLogic.AddToCart(ctx, req.User, req.SKU, req.Count)
-	if err != nil {
-		return response, err
-	}
-
-	return response, nil
+	return Response{}, nil
 }
