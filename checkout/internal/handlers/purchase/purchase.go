@@ -41,12 +41,12 @@ func (h *Handler) Handle(ctx context.Context, req Request) (Response, error) {
 
 	var response Response
 
-	orderID, err := h.businessLogic.Purchase(ctx, req.User)
+	order, err := h.businessLogic.Purchase(ctx, req.User)
 	if err != nil {
 		return response, err
 	}
 
-	response.OrderID = int64(orderID)
+	response.OrderID = order.OrderID
 
 	return response, nil
 }

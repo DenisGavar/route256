@@ -11,7 +11,7 @@ type ProductGetter interface {
 }
 
 type OrderCreator interface {
-	CreateOrder(ctx context.Context, user int64) (int64, error)
+	CreateOrder(ctx context.Context, user int64) (*Order, error)
 }
 
 type Model struct {
