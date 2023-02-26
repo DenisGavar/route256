@@ -3,7 +3,7 @@ package productservice
 import (
 	"context"
 	"route256/checkout/internal/domain"
-	"route256/libs/clientwrapper"
+	clientwrapper "route256/libs/client-wrapper"
 )
 
 type GetProductRequest struct {

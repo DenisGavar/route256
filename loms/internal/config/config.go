@@ -12,21 +12,10 @@ type ConfigStruct struct {
 }
 
 type Services struct {
-	Loms           Loms           `yaml:"loms"`
-	ProductService ProductService `yaml:"productService"`
-	Checkout       Checkout       `yaml:"checkout"`
+	Loms Loms `yaml:"loms"`
 }
 
 type Loms struct {
-	Url string `yaml:"url"`
-}
-
-type ProductService struct {
-	Url   string `yaml:"url"`
-	Token string `yaml:"token"`
-}
-
-type Checkout struct {
 	Port string `yaml:"port"`
 }
 

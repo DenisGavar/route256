@@ -3,17 +3,21 @@ package main
 import (
 	"log"
 	"net/http"
-	"route256/libs/srvwrapper"
-	"route256/loms/internal/handlers/cancelorder"
-	"route256/loms/internal/handlers/createorder"
-	"route256/loms/internal/handlers/listorder"
-	"route256/loms/internal/handlers/orderpayed"
+	srvwrapper "route256/libs/server-wrapper"
+	"route256/loms/internal/config"
+	cancelorder "route256/loms/internal/handlers/cancel-order"
+	createorder "route256/loms/internal/handlers/create-order"
+	listorder "route256/loms/internal/handlers/list-order"
+	orderpayed "route256/loms/internal/handlers/order-payed"
 	"route256/loms/internal/handlers/stocks"
 )
 
-const port = ":8081"
-
 func main() {
+	err := config.Init()
+	if err != nil {
+		log.Fatal("config init", err)
+	}
+
 	stocksHandler := stocks.New()
 	createOrderHandler := createorder.New()
 	listOrderHandler := listorder.New()
@@ -26,7 +30,7 @@ func main() {
 	http.Handle("/orderPayed", srvwrapper.New(orderPayedHandler.Handle))
 	http.Handle("/cancelOrder", srvwrapper.New(cancelOrderHandler.Handle))
 
-	log.Println("listening http at", port)
-	err := http.ListenAndServe(port, nil)
+	log.Println("listening http at", config.ConfigData.Services.Loms.Port)
+	err = http.ListenAndServe(config.ConfigData.Services.Loms.Port, nil)
 	log.Fatal("cannot listen http", err)
 }

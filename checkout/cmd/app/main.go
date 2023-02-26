@@ -7,14 +7,12 @@ import (
 	"route256/checkout/internal/clients/productservice"
 	"route256/checkout/internal/config"
 	"route256/checkout/internal/domain"
-	"route256/checkout/internal/handlers/addtocart"
-	"route256/checkout/internal/handlers/deletefromcart"
-	"route256/checkout/internal/handlers/listcart"
+	addtocart "route256/checkout/internal/handlers/add-to-cart"
+	deletefromcart "route256/checkout/internal/handlers/delete-from-cart"
+	listcart "route256/checkout/internal/handlers/list-cart"
 	"route256/checkout/internal/handlers/purchase"
-	"route256/libs/srvwrapper"
+	srvwrapper "route256/libs/server-wrapper"
 )
-
-const port = ":8080"
 
 func main() {
 	err := config.Init()
@@ -37,7 +35,7 @@ func main() {
 	http.Handle("/listCart", srvwrapper.New(listCartHandler.Handle))
 	http.Handle("/purchase", srvwrapper.New(purchaseHandler.Handle))
 
-	log.Println("listening http at", port)
-	err = http.ListenAndServe(port, nil)
+	log.Println("listening http at", config.ConfigData.Services.Checkout.Port)
+	err = http.ListenAndServe(config.ConfigData.Services.Checkout.Port, nil)
 	log.Fatal("cannot listen http", err)
 }

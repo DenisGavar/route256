@@ -49,12 +49,11 @@ func (h *Handler) Handle(ctx context.Context, req Request) (Response, error) {
 
 	var response Response
 
-	items, err := h.businessLogic.ListCart(ctx, req.User)
+	items, totalPrice, err := h.businessLogic.ListCart(ctx, req.User)
 	if err != nil {
 		return response, err
 	}
 
-	var totalPrice uint32
 	response.Items = make([]Item, 0, len(items))
 	for _, item := range items {
 		response.Items = append(response.Items, Item{
@@ -63,7 +62,6 @@ func (h *Handler) Handle(ctx context.Context, req Request) (Response, error) {
 			Name:  item.Name,
 			Price: item.Price,
 		})
-		totalPrice += item.Price
 	}
 	response.TotalPrice = totalPrice
 
