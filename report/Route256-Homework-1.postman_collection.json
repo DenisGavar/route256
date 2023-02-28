@@ -1,0 +1,307 @@
+{
+	"info": {
+		"_postman_id": "98ccff52-64b3-4635-b060-fe23006eddf5",
+		"name": "Route256: Homework 1",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25810821"
+	},
+	"item": [
+		{
+			"name": "Checkout",
+			"item": [
+				{
+					"name": "addToCart",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user\": 123,\n    \"sku\": 234,\n    \"count\": 3\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/addToCart",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"addToCart"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "deleteFromCart",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user\": 123,\n    \"sku\": 234,\n    \"count\": 3\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/deleteFromCart",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"deleteFromCart"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "listCart",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user\": 123\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/listCart",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"listCart"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "purchase",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user\": 123\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/purchase",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"purchase"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "LOMS",
+			"item": [
+				{
+					"name": "createOrder",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user\": 123,\n    \"items\": [\n        {\n            \"sku\": 123,\n            \"count\": 234\n        },\n        {\n            \"sku\": 234,\n            \"count\": 345\n        }\n    ]\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8081/createOrder",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"createOrder"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "listOrder",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"orderID\": 123\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8081/listOrder",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"listOrder"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "stocks",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"sku\": 123\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8081/stocks",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"stocks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "orderPayed",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"orderID\": 123\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8081/orderPayed",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"orderPayed"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "cancelOrder",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"orderID\": 123\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8081/cancelOrder",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"cancelOrder"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ProductService",
+			"item": [
+				{
+					"name": "get_product",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"3bznka0uUKK5qropYQbW6qu8\",\n    \"sku\": 20367334\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://route256.pavl.uk:8080/get_product",
+							"protocol": "http",
+							"host": [
+								"route256",
+								"pavl",
+								"uk"
+							],
+							"port": "8080",
+							"path": [
+								"get_product"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
