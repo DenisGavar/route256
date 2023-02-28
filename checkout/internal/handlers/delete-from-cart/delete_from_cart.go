@@ -1,4 +1,4 @@
-package deletefromcart
+package delete_from_cart
 
 import (
 	"context"

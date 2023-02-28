@@ -1,4 +1,4 @@
-package cancelorder
+package cancel_order
 
 import (
 	"context"

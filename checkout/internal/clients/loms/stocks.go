@@ -3,7 +3,7 @@ package loms
 import (
 	"context"
 	"route256/checkout/internal/domain"
-	clientwrapper "route256/libs/client-wrapper"
+	clientWrapper "route256/libs/client-wrapper"
 )
 
 type StocksRequest struct {
@@ -22,7 +22,7 @@ type StockResponse struct {
 func (c *Client) Stocks(ctx context.Context, sku uint32) ([]domain.Stock, error) {
 	request := StocksRequest{SKU: sku}
 
-	response, err := clientwrapper.Do[StocksRequest, StockResponse](ctx, c.urlStocks, request)
+	response, err := clientWrapper.Do[StocksRequest, StockResponse](ctx, c.urlStocks, request)
 	if err != nil {
 		return nil, err
 	}

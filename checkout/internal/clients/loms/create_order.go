@@ -3,7 +3,7 @@ package loms
 import (
 	"context"
 	"route256/checkout/internal/domain"
-	clientwrapper "route256/libs/client-wrapper"
+	clientWrapper "route256/libs/client-wrapper"
 )
 
 type CreateOrderRequest struct {
@@ -31,7 +31,7 @@ func (c *Client) CreateOrder(ctx context.Context, user int64) (*domain.Order, er
 		},
 	}
 
-	response, err := clientwrapper.Do[CreateOrderRequest, CreateOrderResponse](ctx, c.urlCreateOrder, request)
+	response, err := clientWrapper.Do[CreateOrderRequest, CreateOrderResponse](ctx, c.urlCreateOrder, request)
 	if err != nil {
 		return nil, err
 	}

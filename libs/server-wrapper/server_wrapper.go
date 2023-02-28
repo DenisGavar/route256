@@ -1,4 +1,4 @@
-package srvwrapper
+package server_wrapper
 
 import (
 	"bytes"

@@ -1,4 +1,4 @@
-package productservice
+package product_service
 
 type Client struct {
 	url   string

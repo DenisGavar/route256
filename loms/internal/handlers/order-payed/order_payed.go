@@ -1,4 +1,4 @@
-package orderpayed
+package order_payed
 
 import (
 	"context"

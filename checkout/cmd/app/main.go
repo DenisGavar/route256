@@ -4,14 +4,14 @@ import (
 	"log"
 	"net/http"
 	"route256/checkout/internal/clients/loms"
-	"route256/checkout/internal/clients/productservice"
+	productService "route256/checkout/internal/clients/product-service"
 	"route256/checkout/internal/config"
 	"route256/checkout/internal/domain"
-	addtocart "route256/checkout/internal/handlers/add-to-cart"
-	deletefromcart "route256/checkout/internal/handlers/delete-from-cart"
-	listcart "route256/checkout/internal/handlers/list-cart"
+	addToCart "route256/checkout/internal/handlers/add-to-cart"
+	deleteFromCart "route256/checkout/internal/handlers/delete-from-cart"
+	listCart "route256/checkout/internal/handlers/list-cart"
 	"route256/checkout/internal/handlers/purchase"
-	srvwrapper "route256/libs/server-wrapper"
+	serverWrapper "route256/libs/server-wrapper"
 )
 
 func main() {
@@ -21,19 +21,19 @@ func main() {
 	}
 
 	lomsClient := loms.New(config.ConfigData.Services.Loms.Url)
-	productServiseClient := productservice.New(config.ConfigData.Services.ProductService.Url, config.ConfigData.Services.ProductService.Token)
+	productServiseClient := productService.New(config.ConfigData.Services.ProductService.Url, config.ConfigData.Services.ProductService.Token)
 
-	busineddLogic := domain.New(lomsClient, lomsClient, productServiseClient)
+	businessLogic := domain.New(lomsClient, lomsClient, productServiseClient)
 
-	addToCartHandler := addtocart.New(busineddLogic)
-	deleteFromCartHandler := deletefromcart.New()
-	listCartHandler := listcart.New(busineddLogic)
-	purchaseHandler := purchase.New(busineddLogic)
+	addToCartHandler := addToCart.New(businessLogic)
+	deleteFromCartHandler := deleteFromCart.New()
+	listCartHandler := listCart.New(businessLogic)
+	purchaseHandler := purchase.New(businessLogic)
 
-	http.Handle("/addToCart", srvwrapper.New(addToCartHandler.Handle))
-	http.Handle("/deleteFromCart", srvwrapper.New(deleteFromCartHandler.Handle))
-	http.Handle("/listCart", srvwrapper.New(listCartHandler.Handle))
-	http.Handle("/purchase", srvwrapper.New(purchaseHandler.Handle))
+	http.Handle("/addToCart", serverWrapper.New(addToCartHandler.Handle))
+	http.Handle("/deleteFromCart", serverWrapper.New(deleteFromCartHandler.Handle))
+	http.Handle("/listCart", serverWrapper.New(listCartHandler.Handle))
+	http.Handle("/purchase", serverWrapper.New(purchaseHandler.Handle))
 
 	log.Println("listening http at", config.ConfigData.Services.Checkout.Port)
 	err = http.ListenAndServe(config.ConfigData.Services.Checkout.Port, nil)

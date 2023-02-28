@@ -1,9 +1,9 @@
-package productservice
+package product_service
 
 import (
 	"context"
 	"route256/checkout/internal/domain"
-	clientwrapper "route256/libs/client-wrapper"
+	clientWrapper "route256/libs/client-wrapper"
 )
 
 type GetProductRequest struct {
@@ -22,7 +22,7 @@ func (c *Client) GetProduct(ctx context.Context, sku uint32) (*domain.Product, e
 		SKU:   sku,
 	}
 
-	response, err := clientwrapper.Do[GetProductRequest, GetProductResponse](ctx, c.urlGetProduct, request)
+	response, err := clientWrapper.Do[GetProductRequest, GetProductResponse](ctx, c.urlGetProduct, request)
 	if err != nil {
 		return nil, err
 	}

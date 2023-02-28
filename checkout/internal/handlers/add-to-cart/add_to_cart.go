@@ -1,4 +1,4 @@
-package addtocart
+package add_to_cart
 
 import (
 	"context"

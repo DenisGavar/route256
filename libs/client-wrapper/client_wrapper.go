@@ -1,4 +1,4 @@
-package clientwrapper
+package client_wrapper
 
 import (
 	"bytes"
