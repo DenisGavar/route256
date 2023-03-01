@@ -2,16 +2,13 @@ package main
 
 import (
 	"log"
-	"net/http"
-	"route256/checkout/internal/clients/loms"
-	"route256/checkout/internal/clients/productservice"
+	"net"
+	checkoutV1 "route256/checkout/internal/api/checkout_v1"
 	"route256/checkout/internal/config"
-	"route256/checkout/internal/domain"
-	addtocart "route256/checkout/internal/handlers/add-to-cart"
-	deletefromcart "route256/checkout/internal/handlers/delete-from-cart"
-	listcart "route256/checkout/internal/handlers/list-cart"
-	"route256/checkout/internal/handlers/purchase"
-	srvwrapper "route256/libs/server-wrapper"
+	desc "route256/checkout/pkg/checkout_v1"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -20,22 +17,38 @@ func main() {
 		log.Fatal("config init", err)
 	}
 
-	lomsClient := loms.New(config.ConfigData.Services.Loms.Url)
-	productServiseClient := productservice.New(config.ConfigData.Services.ProductService.Url, config.ConfigData.Services.ProductService.Token)
+	lis, err := net.Listen("tcp", config.ConfigData.Services.Checkout.Port)
+	if err != nil {
+		log.Fatal("failed to listen", err)
+	}
 
-	busineddLogic := domain.New(lomsClient, lomsClient, productServiseClient)
+	s := grpc.NewServer()
+	reflection.Register(s)
 
-	addToCartHandler := addtocart.New(busineddLogic)
-	deleteFromCartHandler := deletefromcart.New()
-	listCartHandler := listcart.New(busineddLogic)
-	purchaseHandler := purchase.New(busineddLogic)
+	desc.RegisterCheckoutV1Server(s, checkoutV1.NewCheckoutV1())
 
-	http.Handle("/addToCart", srvwrapper.New(addToCartHandler.Handle))
-	http.Handle("/deleteFromCart", srvwrapper.New(deleteFromCartHandler.Handle))
-	http.Handle("/listCart", srvwrapper.New(listCartHandler.Handle))
-	http.Handle("/purchase", srvwrapper.New(purchaseHandler.Handle))
+	log.Println("grpc server at", config.ConfigData.Services.Checkout.Port)
 
-	log.Println("listening http at", config.ConfigData.Services.Checkout.Port)
-	err = http.ListenAndServe(config.ConfigData.Services.Checkout.Port, nil)
-	log.Fatal("cannot listen http", err)
+	if err := s.Serve(lis); err != nil {
+		log.Fatal("failed to serve", err)
+	}
+
+	// lomsClient := loms.New(config.ConfigData.Services.Loms.Url)
+	// productServiseClient := productservice.New(config.ConfigData.Services.ProductService.Url, config.ConfigData.Services.ProductService.Token)
+
+	// busineddLogic := domain.New(lomsClient, lomsClient, productServiseClient)
+
+	// addToCartHandler := addtocart.New(busineddLogic)
+	// deleteFromCartHandler := deletefromcart.New()
+	// listCartHandler := listcart.New(busineddLogic)
+	// purchaseHandler := purchase.New(busineddLogic)
+
+	// http.Handle("/addToCart", srvwrapper.New(addToCartHandler.Handle))
+	// http.Handle("/deleteFromCart", srvwrapper.New(deleteFromCartHandler.Handle))
+	// http.Handle("/listCart", srvwrapper.New(listCartHandler.Handle))
+	// http.Handle("/purchase", srvwrapper.New(purchaseHandler.Handle))
+
+	// log.Println("listening http at", config.ConfigData.Services.Checkout.Port)
+	// err = http.ListenAndServe(config.ConfigData.Services.Checkout.Port, nil)
+	// log.Fatal("cannot listen http", err)
 }

@@ -64,10 +64,10 @@ vendor-proto:
 
 generate:
 	mkdir -p pkg/checkout_v1
-	protoc -I api/checkout/v1 -I vendor-proto \
+	protoc -I api/checkout_v1 -I vendor-proto \
 	--go_out=pkg/checkout_v1 --go_opt=paths=source_relative \
 	--plugin=protoc-gen-go=bin/protoc-gen-go \
 	--go-grpc_out=pkg/checkout_v1 --go-grpc_opt=paths=source_relative \
 	--plugin=protoc-gen-go-grpc=bin/protoc-gen-go-grpc \
-	api/checkout/v1/checkout.proto
+	api/checkout_v1/checkout.proto
 

@@ -2,14 +2,13 @@ package main
 
 import (
 	"log"
-	"net/http"
-	srvwrapper "route256/libs/server-wrapper"
+	"net"
+	lomsV1 "route256/loms/internal/api/loms_v1"
 	"route256/loms/internal/config"
-	cancelorder "route256/loms/internal/handlers/cancel-order"
-	createorder "route256/loms/internal/handlers/create-order"
-	listorder "route256/loms/internal/handlers/list-order"
-	orderpayed "route256/loms/internal/handlers/order-payed"
-	"route256/loms/internal/handlers/stocks"
+	desc "route256/loms/pkg/loms_v1"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -18,19 +17,19 @@ func main() {
 		log.Fatal("config init", err)
 	}
 
-	stocksHandler := stocks.New()
-	createOrderHandler := createorder.New()
-	listOrderHandler := listorder.New()
-	orderPayedHandler := orderpayed.New()
-	cancelOrderHandler := cancelorder.New()
+	lis, err := net.Listen("tcp", config.ConfigData.Services.Loms.Port)
+	if err != nil {
+		log.Fatal("failed to listen", err)
+	}
 
-	http.Handle("/stocks", srvwrapper.New(stocksHandler.Handle))
-	http.Handle("/createOrder", srvwrapper.New(createOrderHandler.Handle))
-	http.Handle("/listOrder", srvwrapper.New(listOrderHandler.Handle))
-	http.Handle("/orderPayed", srvwrapper.New(orderPayedHandler.Handle))
-	http.Handle("/cancelOrder", srvwrapper.New(cancelOrderHandler.Handle))
+	s := grpc.NewServer()
+	reflection.Register(s)
 
-	log.Println("listening http at", config.ConfigData.Services.Loms.Port)
-	err = http.ListenAndServe(config.ConfigData.Services.Loms.Port, nil)
-	log.Fatal("cannot listen http", err)
+	desc.RegisterLOMSV1Server(s, lomsV1.NewLomsV1())
+
+	log.Println("grpc server at", config.ConfigData.Services.Loms.Port)
+
+	if err := s.Serve(lis); err != nil {
+		log.Fatal("failed to serve", err)
+	}
 }
