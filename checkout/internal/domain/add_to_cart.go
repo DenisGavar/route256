@@ -6,6 +6,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+type AddToCartRequest struct {
+	// user ID
+	User int64
+	// stock keeping unit - единица складского учёта
+	Sku   uint32
+	Count uint32
+}
+
 type Stock struct {
 	WarehouseID int64
 	Count       uint64
@@ -15,19 +23,21 @@ var (
 	ErrInsufficientStocks = errors.New("insufficient stocks")
 )
 
-func (m *Model) AddToCart(ctx context.Context, user int64, sku uint32, count uint16) error {
-	stocks, err := m.stocksChecker.Stocks(ctx, sku)
-	if err != nil {
-		return errors.WithMessage(err, "checking stocks")
-	}
+func (m *model) AddToCart(ctx context.Context, req *AddToCartRequest) error {
+	return nil
 
-	counter := int64(count)
-	for _, stock := range stocks {
-		counter -= int64(stock.Count)
-		if counter <= 0 {
-			return nil
-		}
-	}
+	// stocks, err := m.stocksChecker.Stocks(ctx, sku)
+	// if err != nil {
+	// 	return errors.WithMessage(err, "checking stocks")
+	// }
 
-	return ErrInsufficientStocks
+	// counter := int64(count)
+	// for _, stock := range stocks {
+	// 	counter -= int64(stock.Count)
+	// 	if counter <= 0 {
+	// 		return nil
+	// 	}
+	// }
+
+	// return ErrInsufficientStocks
 }

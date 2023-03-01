@@ -2,20 +2,31 @@ package domain
 
 import (
 	"context"
-
-	"github.com/pkg/errors"
 )
+
+type PurchaseRequest struct {
+	// user ID
+	User int64
+}
+
+type PurchaseResponse struct {
+	OrderId int64
+}
 
 type Order struct {
 	OrderID int64
 }
 
-func (m *Model) Purchase(ctx context.Context, user int64) (*Order, error) {
+func (m *model) Purchase(ctx context.Context, req *PurchaseRequest) (*PurchaseResponse, error) {
 
-	order, err := m.orderCreator.CreateOrder(ctx, user)
-	if err != nil {
-		return order, errors.WithMessage(err, "create order")
-	}
+	return &PurchaseResponse{
+		OrderId: 42,
+	}, nil
 
-	return order, nil
+	// order, err := m.orderCreator.CreateOrder(ctx, user)
+	// if err != nil {
+	// 	return order, errors.WithMessage(err, "create order")
+	// }
+
+	// return order, nil
 }

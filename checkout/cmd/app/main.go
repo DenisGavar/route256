@@ -5,6 +5,7 @@ import (
 	"net"
 	checkoutV1 "route256/checkout/internal/api/checkout_v1"
 	"route256/checkout/internal/config"
+	"route256/checkout/internal/domain"
 	desc "route256/checkout/pkg/checkout_v1"
 
 	"google.golang.org/grpc"
@@ -25,7 +26,9 @@ func main() {
 	s := grpc.NewServer()
 	reflection.Register(s)
 
-	desc.RegisterCheckoutV1Server(s, checkoutV1.NewCheckoutV1())
+	businessLogic := domain.NewModel()
+
+	desc.RegisterCheckoutV1Server(s, checkoutV1.NewCheckoutV1(businessLogic))
 
 	log.Println("grpc server at", config.ConfigData.Services.Checkout.Port)
 
