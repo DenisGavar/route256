@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package loms_v1;
+
+// проверить путь
+option go_package = "route256/loms/pkg/loms_v1;loms_v1";
+
+import "google/protobuf/empty.proto";
+
+service LOMSV1 {
+    // Создает новый заказ для пользователя из списка переданных товаров. Товары при этом нужно зарезервировать на складе
+    rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+
+    // Показывает информацию по заказу
+    rpc ListOrder(ListOrderRequest) returns (ListOrderResponse);
+
+    // Помечает заказ оплаченным. Зарезервированные товары должны перейти в статус купленных
+    rpc OrderPayed(OrderPayedRequest) returns (google.protobuf.Empty);
+
+    // Отменяет заказ, снимает резерв со всех товаров в заказе
+    rpc CancelOrder(CancelOrderRequest) returns (google.protobuf.Empty);
+
+    // Возвращает количество товаров, которые можно купить с разных складов. Если товар был зарезерванован у кого-то в заказе и ждет оплаты, его купить нельзя
+    rpc Stocks(StocksRequest) returns (StocksResponse);
+}
+
+message OrderItem {
+    // stock keeping unit - единица складского учёта
+    uint32 sku = 1;
+    uint32 count = 2;
+}
+
+message CreateOrderRequest {
+    // user ID
+    int64 user = 1;
+    // слайс товаров заказа
+    repeated OrderItem items = 2;
+}
+
+message CreateOrderResponse {
+    int64 order_id = 1;
+}
+
+message ListOrderRequest {
+    int64 order_id = 1;
+}
+
+// статус заказа (new | awaiting payment | failed | payed | cancelled)
+enum OderStatus {
+    new = 0;
+    awaiting_payment = 1;
+    failed = 2;
+    payed = 3;
+    cancelled = 4;
+}
+
+message ListOrderResponse {
+    // статус заказа (new | awaiting payment | failed | payed | cancelled)
+    OderStatus status = 1;
+    // user ID
+    int64 user = 2;
+    // слайс товаров заказа
+    repeated OrderItem items = 3;    
+}
+
+message OrderPayedRequest {
+    int64 order_id = 1;
+}
+
+message CancelOrderRequest {
+    int64 order_id = 1;
+}
+
+message StocksRequest {
+    // stock keeping unit - единица складского учёта
+    uint32 sku = 1;
+}
+
+message StockItem {
+    int64 warehouse_id = 1;
+    uint64 count = 2;
+}
+
+
+message StocksResponse {
+    // слайс товаров на складах
+    repeated StockItem stocks = 1;
+}

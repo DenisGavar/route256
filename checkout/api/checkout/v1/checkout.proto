@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package checkout_v1;
+
+// проверить путь
+option go_package = "route256/checkout/pkg/checkout_v1;checkout_v1";
+
+import "google/protobuf/empty.proto";
+
+service CheckoutV1 {
+    // Добавить товар в корзину определенного пользователя. При этом надо проверить наличие товара через LOMS.stocks
+    rpc AddToCart(AddToCartRequest) returns (google.protobuf.Empty);
+
+    // Удалить товар из корзины определенного пользователя
+    rpc DeleteFromCart(DeleteFromCartRequest) returns (google.protobuf.Empty);
+
+    // Показать список товаров в корзине с именами и ценами (их надо в реальном времени получать из ProductService)
+    rpc ListCart(ListCartRequest) returns (ListCartResponse);
+
+    // Оформить заказ по всем товарам корзины. Вызывает createOrder у LOMS
+    rpc Purchase(PurchaseRequest) returns (PurchaseResponse);
+}
+
+message AddToCartRequest {
+    // user ID
+    int64 user = 1;
+    // stock keeping unit - единица складского учёта
+    uint32 sku = 2;
+    uint32 count = 3;
+}
+
+message DeleteFromCartRequest {
+    // user ID
+    int64 user = 1;
+    // stock keeping unit - единица складского учёта
+    uint32 sku = 2;
+    uint32 count = 3;    
+}
+
+message ListCartRequest {
+    // user ID
+    int64 user = 1;    
+}
+
+message CartItem {
+    // stock keeping unit - единица складского учёта
+    uint32 sku = 1;
+    uint32 count = 2;
+    // наименование товара
+    string name = 3;
+    // цена товара
+    uint32 price = 4;
+}
+
+message ListCartResponse {
+    repeated CartItem items = 1;
+    uint32 total_price = 2;
+}
+
+message PurchaseRequest {
+    // user ID
+    int64 user = 1; 
+}
+
+message PurchaseResponse {
+    int64 order_id = 1;
+}
