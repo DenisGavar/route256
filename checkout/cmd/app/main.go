@@ -4,11 +4,14 @@ import (
 	"log"
 	"net"
 	checkoutV1 "route256/checkout/internal/api/checkout_v1"
+	"route256/checkout/internal/clients/grpc/loms"
+	productService "route256/checkout/internal/clients/grpc/product-service"
 	"route256/checkout/internal/config"
 	"route256/checkout/internal/domain"
 	desc "route256/checkout/pkg/checkout_v1"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 )
 
@@ -26,7 +29,22 @@ func main() {
 	s := grpc.NewServer()
 	reflection.Register(s)
 
-	businessLogic := domain.NewModel()
+	// создаём клиентов
+	lomsConn, err := grpc.Dial(config.ConfigData.Services.Loms.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatal("failed to creating client loms", err)
+	}
+	defer lomsConn.Close()
+	lomsClient := loms.New(lomsConn)
+
+	productServiceConn, err := grpc.Dial(config.ConfigData.Services.ProductService.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatal("failed to creating client loms", err)
+	}
+	defer productServiceConn.Close()
+	productServiceClient := productService.New(productServiceConn, config.ConfigData.Services.ProductService.Token)
+
+	businessLogic := domain.NewModel(lomsClient, productServiceClient)
 
 	desc.RegisterCheckoutV1Server(s, checkoutV1.NewCheckoutV1(businessLogic))
 
@@ -35,23 +53,4 @@ func main() {
 	if err := s.Serve(lis); err != nil {
 		log.Fatal("failed to serve", err)
 	}
-
-	// lomsClient := loms.New(config.ConfigData.Services.Loms.Url)
-	// productServiseClient := productservice.New(config.ConfigData.Services.ProductService.Url, config.ConfigData.Services.ProductService.Token)
-
-	// busineddLogic := domain.New(lomsClient, lomsClient, productServiseClient)
-
-	// addToCartHandler := addtocart.New(busineddLogic)
-	// deleteFromCartHandler := deletefromcart.New()
-	// listCartHandler := listcart.New(busineddLogic)
-	// purchaseHandler := purchase.New(busineddLogic)
-
-	// http.Handle("/addToCart", srvwrapper.New(addToCartHandler.Handle))
-	// http.Handle("/deleteFromCart", srvwrapper.New(deleteFromCartHandler.Handle))
-	// http.Handle("/listCart", srvwrapper.New(listCartHandler.Handle))
-	// http.Handle("/purchase", srvwrapper.New(purchaseHandler.Handle))
-
-	// log.Println("listening http at", config.ConfigData.Services.Checkout.Port)
-	// err = http.ListenAndServe(config.ConfigData.Services.Checkout.Port, nil)
-	// log.Fatal("cannot listen http", err)
 }

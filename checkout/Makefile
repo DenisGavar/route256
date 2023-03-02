@@ -70,4 +70,11 @@ generate:
 	--go-grpc_out=pkg/checkout_v1 --go-grpc_opt=paths=source_relative \
 	--plugin=protoc-gen-go-grpc=bin/protoc-gen-go-grpc \
 	api/checkout_v1/checkout.proto
+	mkdir -p pkg/product-service_v1
+	protoc -I api/product-service_v1 -I vendor-proto \
+	--go_out=pkg/product-service_v1 --go_opt=paths=source_relative \
+	--plugin=protoc-gen-go=bin/protoc-gen-go \
+	--go-grpc_out=pkg/product-service_v1 --go-grpc_opt=paths=source_relative \
+	--plugin=protoc-gen-go-grpc=bin/protoc-gen-go-grpc \
+	api/product-service_v1/product_service.proto
 

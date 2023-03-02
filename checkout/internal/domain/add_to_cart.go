@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	loms "route256/loms/pkg/loms_v1"
 
 	"github.com/pkg/errors"
 )
@@ -14,30 +15,23 @@ type AddToCartRequest struct {
 	Count uint32
 }
 
-type Stock struct {
-	WarehouseID int64
-	Count       uint64
-}
-
 var (
 	ErrInsufficientStocks = errors.New("insufficient stocks")
 )
 
 func (m *model) AddToCart(ctx context.Context, req *AddToCartRequest) error {
-	return nil
+	stocks, err := m.lomsClient.Stocks(ctx, &loms.StocksRequest{Sku: req.Sku})
+	if err != nil {
+		return errors.WithMessage(err, "checking stocks")
+	}
 
-	// stocks, err := m.stocksChecker.Stocks(ctx, sku)
-	// if err != nil {
-	// 	return errors.WithMessage(err, "checking stocks")
-	// }
+	counter := int64(req.Count)
+	for _, stock := range stocks.GetStocks() {
+		counter -= int64(stock.Count)
+		if counter <= 0 {
+			return nil
+		}
+	}
 
-	// counter := int64(count)
-	// for _, stock := range stocks {
-	// 	counter -= int64(stock.Count)
-	// 	if counter <= 0 {
-	// 		return nil
-	// 	}
-	// }
-
-	// return ErrInsufficientStocks
+	return ErrInsufficientStocks
 }

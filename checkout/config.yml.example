@@ -1,0 +1,8 @@
+services:
+  loms:
+    address: ""
+  productService:
+    address: ""
+    token: ""
+  checkout:
+    port: ""
