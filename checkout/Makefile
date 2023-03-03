@@ -42,10 +42,12 @@ install-smartimports: bindir
 install-go-deps:
 	GOBIN=$(BINDIR) go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1
 	GOBIN=$(BINDIR) go install -mod=mod google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+	GOBIN=$(BINDIR) go install -mod=mod  github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.15.0
 
 get-go-deps:
 	go get -u google.golang.org/protobuf/cmd/protoc-gen-go
 	go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc
+	go get -u github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway
 
 vendor-proto:
 	mkdir -p vendor-proto
@@ -69,6 +71,8 @@ generate:
 	--plugin=protoc-gen-go=bin/protoc-gen-go \
 	--go-grpc_out=pkg/checkout_v1 --go-grpc_opt=paths=source_relative \
 	--plugin=protoc-gen-go-grpc=bin/protoc-gen-go-grpc \
+	--grpc-gateway_out=pkg/checkout_v1 --grpc-gateway_opt=paths=source_relative \
+	--plugin=protoc-gen-grpc-gateway=bin/protoc-gen-grpc-gateway \
 	api/checkout_v1/checkout.proto
 	mkdir -p pkg/product-service_v1
 	protoc -I api/product-service_v1 -I vendor-proto \

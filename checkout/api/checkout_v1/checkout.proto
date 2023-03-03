@@ -5,20 +5,41 @@ package checkout_v1;
 // проверить путь
 option go_package = "route256/checkout/pkg/checkout_v1;checkout_v1";
 
+import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 
 service CheckoutV1 {
     // Добавить товар в корзину определенного пользователя. При этом надо проверить наличие товара через LOMS.stocks
-    rpc AddToCart(AddToCartRequest) returns (google.protobuf.Empty);
+    rpc AddToCart(AddToCartRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/addToCart"
+            body: "*"
+        };
+    };
 
     // Удалить товар из корзины определенного пользователя
-    rpc DeleteFromCart(DeleteFromCartRequest) returns (google.protobuf.Empty);
+    rpc DeleteFromCart(DeleteFromCartRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/deleteFromCart"
+            body: "*"
+        };
+    };
 
     // Показать список товаров в корзине с именами и ценами (их надо в реальном времени получать из ProductService)
-    rpc ListCart(ListCartRequest) returns (ListCartResponse);
+    rpc ListCart(ListCartRequest) returns (ListCartResponse) {
+        option (google.api.http) = {
+            post: "/listCart"
+            body: "*"
+        };        
+    };
 
     // Оформить заказ по всем товарам корзины. Вызывает createOrder у LOMS
-    rpc Purchase(PurchaseRequest) returns (PurchaseResponse);
+    rpc Purchase(PurchaseRequest) returns (PurchaseResponse) {
+        option (google.api.http) = {
+            post: "/purchase"
+            body: "*"
+        };         
+    };
 }
 
 message AddToCartRequest {

@@ -27,7 +27,8 @@ type ProductService struct {
 }
 
 type Checkout struct {
-	Port string `yaml:"port"`
+	HTTPPort string `yaml:"httpPort"`
+	GRPCPort string `yaml:"grpcPort"`
 }
 
 var ConfigData ConfigStruct

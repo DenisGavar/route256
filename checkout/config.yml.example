@@ -5,4 +5,5 @@ services:
     address: ""
     token: ""
   checkout:
-    port: ""
+    httpPort: ""
+    grpcPort: ""
