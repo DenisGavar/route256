@@ -5,6 +5,7 @@ import (
 	"net"
 	lomsV1 "route256/loms/internal/api/loms_v1"
 	"route256/loms/internal/config"
+	"route256/loms/internal/domain"
 	desc "route256/loms/pkg/loms_v1"
 
 	"google.golang.org/grpc"
@@ -25,7 +26,9 @@ func main() {
 	s := grpc.NewServer()
 	reflection.Register(s)
 
-	desc.RegisterLOMSV1Server(s, lomsV1.NewLomsV1())
+	businessLogic := domain.NewService()
+
+	desc.RegisterLOMSV1Server(s, lomsV1.NewLomsV1(businessLogic))
 
 	log.Println("grpc server at", config.ConfigData.Services.Loms.Port)
 
