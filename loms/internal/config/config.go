@@ -12,11 +12,20 @@ type ConfigStruct struct {
 }
 
 type Services struct {
-	Loms Loms `yaml:"loms"`
+	Loms   Loms   `yaml:"loms"`
+	LomsDB LomsDB `yaml:"lomsDB"`
 }
 
 type Loms struct {
 	Port string `yaml:"port"`
+}
+
+type LomsDB struct {
+	Host     string `yaml:"host"`
+	Port     string `yaml:"port"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
+	DBName   string `yaml:"dbName"`
 }
 
 var ConfigData ConfigStruct

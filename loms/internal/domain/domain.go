@@ -5,6 +5,30 @@ import (
 	"route256/loms/internal/domain/model"
 )
 
+type TransactionManager interface {
+	RunRepeatableRead(ctx context.Context, f func(ctxTX context.Context) error) error
+}
+
+type LomsRepository interface {
+	CreateOrder(context.Context, *model.CreateOrderRequest) (*model.CreateOrderResponse, error)
+	//ListOrder
+	//OrderPayed
+	//CancelOrder
+	Stocks(context.Context, *model.StocksRequest) (*model.StocksResponse, error)
+}
+
+type repository struct {
+	lomsRepository     LomsRepository
+	transactionManager TransactionManager
+}
+
+func NewRepository(lomsRepository LomsRepository, transactionManager TransactionManager) *repository {
+	return &repository{
+		lomsRepository:     lomsRepository,
+		transactionManager: transactionManager,
+	}
+}
+
 var _ Service = (*service)(nil)
 
 type Service interface {
@@ -16,8 +40,11 @@ type Service interface {
 }
 
 type service struct {
+	repository *repository
 }
 
-func NewService() *service {
-	return &service{}
+func NewService(repository *repository) *service {
+	return &service{
+		repository: repository,
+	}
 }

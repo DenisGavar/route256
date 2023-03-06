@@ -1,3 +1,9 @@
 services:
   loms:
     port: ""
+  lomsDB:
+    host: ""
+    port: ""
+    user: ""
+    password: ""
+    dbName: ""
