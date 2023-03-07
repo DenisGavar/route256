@@ -11,7 +11,8 @@ type TransactionManager interface {
 
 type LomsRepository interface {
 	CreateOrder(context.Context, *model.CreateOrderRequest) (*model.CreateOrderResponse, error)
-	//ListOrder
+	ReserveItems(context.Context, *model.CreateOrderRequest) error
+	ListOrder(context.Context, *model.ListOrderRequest) (*model.ListOrderResponse, error)
 	//OrderPayed
 	//CancelOrder
 	Stocks(context.Context, *model.StocksRequest) (*model.StocksResponse, error)

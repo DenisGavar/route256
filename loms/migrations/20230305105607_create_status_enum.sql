@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TYPE order_status AS ENUM ('new', 'awaiting payment', 'failed', 'payed', 'cancelled');
+CREATE TYPE order_status as ENUM ('new', 'awaiting payment', 'failed', 'payed', 'cancelled');
 -- +goose StatementEnd
 
 -- +goose Down

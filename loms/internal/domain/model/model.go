@@ -5,8 +5,9 @@ type CancelOrderRequest struct {
 }
 
 type CreateOrderRequest struct {
-	User  int64
-	Items []*OrderItem
+	User    int64
+	OrderId int64
+	Items   []*OrderItem
 }
 
 type OrderItem struct {
@@ -23,18 +24,17 @@ type ListOrderRequest struct {
 }
 
 // статус заказа (new | awaiting payment | failed | payed | cancelled)
-type OderStatus int32
 
 const (
-	OderStatus_new              OderStatus = 0
-	OderStatus_awaiting_payment OderStatus = 1
-	OderStatus_failed           OderStatus = 2
-	OderStatus_payed            OderStatus = 3
-	OderStatus_cancelled        OderStatus = 4
+	OrderStatusNew             string = "new"
+	OrderStatusAwaitingPayment string = "awaiting payment"
+	OrderStatusFailed          string = "failed"
+	OrderStatusPayed           string = "payed"
+	OrderStatusCancelled       string = "cancelled"
 )
 
 type ListOrderResponse struct {
-	Status OderStatus
+	Status string
 	User   int64
 	Items  []*OrderItem
 }

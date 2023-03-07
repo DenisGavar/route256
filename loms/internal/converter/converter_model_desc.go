@@ -60,7 +60,7 @@ func FromModelToDescListOrderResponse(listOrderResponse *model.ListOrderResponse
 	}
 
 	return &desc.ListOrderResponse{
-		Status: desc.OderStatus(listOrderResponse.Status),
+		Status: listOrderResponse.Status,
 		User:   listOrderResponse.User,
 		Items:  items,
 	}

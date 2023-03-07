@@ -1,7 +1,7 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS orders (
-    id int8 PRIMARY KEY,
+    id serial PRIMARY KEY,
     user_id int8,
     status order_status
 );

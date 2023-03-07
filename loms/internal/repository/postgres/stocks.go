@@ -10,10 +10,6 @@ import (
 	"github.com/georgysavva/scany/pgxscan"
 )
 
-const (
-	itemsStocksTable = "items_stocks"
-)
-
 func (r *repo) Stocks(ctx context.Context, stocksRequest *model.StocksRequest) (*model.StocksResponse, error) {
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 
@@ -28,7 +24,7 @@ func (r *repo) Stocks(ctx context.Context, stocksRequest *model.StocksRequest) (
 		return nil, err
 	}
 
-	var stockItems []schema.StockItem
+	var stockItems []*schema.StockItem
 	if err := pgxscan.Select(ctx, db, &stockItems, rawQuery, args...); err != nil {
 		return nil, err
 	}
