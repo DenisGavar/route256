@@ -2,7 +2,6 @@ package domain
 
 import (
 	"context"
-	"log"
 	"route256/loms/internal/domain/model"
 )
 
@@ -59,7 +58,6 @@ func (m *service) CreateOrder(ctx context.Context, req *model.CreateOrderRequest
 
 			for warehouseId, reserveStockItem := range needToReserve {
 				if err := m.repository.lomsRepository.ReserveItems(ctxTX, response.OrderId, warehouseId, &reserveStockItem); err != nil {
-					log.Println(err)
 					return err
 				}
 			}
@@ -67,8 +65,6 @@ func (m *service) CreateOrder(ctx context.Context, req *model.CreateOrderRequest
 
 		return nil
 	})
-
-	log.Println(err)
 
 	// проверяем успешность резерва
 	if err != nil {

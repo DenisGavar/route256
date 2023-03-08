@@ -25,14 +25,14 @@ func (r *repo) CreateOrder(ctx context.Context, req *model.CreateOrderRequest) (
 		return nil, err
 	}
 
-	rows, err := db.Query(ctx, rawQuery, args...)
+	raws, err := db.Query(ctx, rawQuery, args...)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer raws.Close()
 
 	var order schema.Order
-	if err := pgxscan.ScanOne(&order, rows); err != nil {
+	if err := pgxscan.ScanOne(&order, raws); err != nil {
 		return nil, err
 	}
 
@@ -49,7 +49,7 @@ func (r *repo) CreateOrder(ctx context.Context, req *model.CreateOrderRequest) (
 		return nil, err
 	}
 
-	_, err = db.Query(ctx, rawQuery, args...)
+	_, err = db.Exec(ctx, rawQuery, args...)
 	if err != nil {
 		return nil, err
 	}

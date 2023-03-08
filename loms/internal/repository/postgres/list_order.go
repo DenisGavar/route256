@@ -25,12 +25,6 @@ func (r *repo) ListOrder(ctx context.Context, req *model.ListOrderRequest) (*mod
 		return nil, err
 	}
 
-	rows, err := db.Query(ctx, rawQuery, args...)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
 	var order schema.Order
 	if err := pgxscan.Get(ctx, db, &order, rawQuery, args...); err != nil {
 		return nil, err

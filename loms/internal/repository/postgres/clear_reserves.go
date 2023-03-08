@@ -6,16 +6,14 @@ import (
 	sq "github.com/Masterminds/squirrel"
 )
 
-func (r *repo) ChangeStatus(ctx context.Context, orderId int64, status string) error {
-	// меняем статус заказа
-
+func (r *repo) ClearReserves(ctx context.Context, orderId int64) error {
+	// убираем товары из резерва
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
-	query := pgBuilder.Update(ordersTable).
-		Set("status", status).
-		Where("id = ?", orderId)
+	query := pgBuilder.Delete(itemsStocksReservationTable).
+		Where("orders_id = ?", orderId)
 
 	rawQuery, args, err := query.ToSql()
 	if err != nil {

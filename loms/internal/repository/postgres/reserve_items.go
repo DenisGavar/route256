@@ -25,13 +25,11 @@ func (r *repo) ReserveItems(ctx context.Context, orderId int64, warehouseId int6
 
 		rawQuery, args, err := query.ToSql()
 		if err != nil {
-			log.Println(1)
 			return err
 		}
 
-		_, err = db.Query(ctx, rawQuery, args...)
+		_, err = db.Exec(ctx, rawQuery, args...)
 		if err != nil {
-			log.Println(2)
 			return err
 		}
 	} else {
@@ -43,13 +41,11 @@ func (r *repo) ReserveItems(ctx context.Context, orderId int64, warehouseId int6
 
 		rawQuery, args, err := query.ToSql()
 		if err != nil {
-			log.Println(3)
 			return err
 		}
 
-		_, err = db.Query(ctx, rawQuery, args...)
+		_, err = db.Exec(ctx, rawQuery, args...)
 		if err != nil {
-			log.Println(4)
 			return err
 		}
 	}
@@ -61,13 +57,11 @@ func (r *repo) ReserveItems(ctx context.Context, orderId int64, warehouseId int6
 
 	rawQuery, args, err := query.ToSql()
 	if err != nil {
-		log.Println(5)
 		return err
 	}
 
-	_, err = db.Query(ctx, rawQuery, args...)
+	_, err = db.Exec(ctx, rawQuery, args...)
 	if err != nil {
-		log.Println(6)
 		return err
 	}
 

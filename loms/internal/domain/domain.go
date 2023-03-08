@@ -17,7 +17,7 @@ type TransactionManager interface {
 type LomsRepository interface {
 	CreateOrder(context.Context, *model.CreateOrderRequest) (*model.CreateOrderResponse, error)
 	ListOrder(context.Context, *model.ListOrderRequest) (*model.ListOrderResponse, error)
-	//OrderPayed
+	ClearReserves(ctx context.Context, orderId int64) error
 	//CancelOrder
 	Stocks(context.Context, *model.StocksRequest) (*model.StocksResponse, error)
 
