@@ -6,7 +6,7 @@ import (
 	"route256/loms/internal/repository/schema"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/georgysavva/scany/pgxscan"
+	"github.com/georgysavva/scany/v2/pgxscan"
 )
 
 func (r *repo) CreateOrder(ctx context.Context, req *model.CreateOrderRequest) (*model.CreateOrderResponse, error) {
@@ -49,11 +49,10 @@ func (r *repo) CreateOrder(ctx context.Context, req *model.CreateOrderRequest) (
 		return nil, err
 	}
 
-	rows, err = db.Query(ctx, rawQuery, args...)
+	_, err = db.Query(ctx, rawQuery, args...)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
 	return &model.CreateOrderResponse{
 		OrderId: order.OrderId,

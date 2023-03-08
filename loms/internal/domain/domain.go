@@ -2,7 +2,12 @@ package domain
 
 import (
 	"context"
+	"errors"
 	"route256/loms/internal/domain/model"
+)
+
+var (
+	ErrNotEnoughItems = errors.New("not enough items")
 )
 
 type TransactionManager interface {
@@ -11,11 +16,13 @@ type TransactionManager interface {
 
 type LomsRepository interface {
 	CreateOrder(context.Context, *model.CreateOrderRequest) (*model.CreateOrderResponse, error)
-	ReserveItems(context.Context, *model.CreateOrderRequest) error
 	ListOrder(context.Context, *model.ListOrderRequest) (*model.ListOrderResponse, error)
 	//OrderPayed
 	//CancelOrder
 	Stocks(context.Context, *model.StocksRequest) (*model.StocksResponse, error)
+
+	ReserveItems(ctx context.Context, orderId int64, warehouseId int64, req *model.ReserveStocksItem) error
+	ChangeStatus(ctx context.Context, orderId int64, status string) error
 }
 
 type repository struct {

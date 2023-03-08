@@ -55,3 +55,9 @@ type StockItem struct {
 type StocksResponse struct {
 	Stocks []*StockItem
 }
+
+type ReserveStocksItem struct {
+	Sku   uint32
+	Count uint64
+	Part  bool
+}

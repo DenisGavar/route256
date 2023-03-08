@@ -5,9 +5,10 @@ import (
 )
 
 const (
-	itemsStocksTable = "items_stocks"
-	ordersTable      = "orders"
-	orderItemsTable  = "order_items"
+	itemsStocksTable            = "items_stocks"
+	ordersTable                 = "orders"
+	orderItemsTable             = "order_items"
+	itemsStocksReservationTable = "items_stocks_reservation"
 )
 
 type repo struct {

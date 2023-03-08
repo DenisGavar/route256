@@ -13,8 +13,7 @@ import (
 	desc "route256/loms/pkg/loms_v1"
 	"time"
 
-	"github.com/jackc/pgx/v4"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -45,19 +44,8 @@ func main() {
 		config.ConfigData.Services.LomsDB.Port,
 		config.ConfigData.Services.LomsDB.DBName)
 
-	// открываем соединение к БД
-	conn, err := pgx.Connect(ctx, psqlConn)
-	if err != nil {
-		log.Fatalf("unable to connect to database: %v\n", err)
-	}
-	defer conn.Close(ctx)
-
-	if err := conn.Ping(ctx); err != nil {
-		log.Fatal(err)
-	}
-
 	// пул соединений
-	pool, err := pgxpool.Connect(ctx, psqlConn)
+	pool, err := pgxpool.New(ctx, psqlConn)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -69,9 +57,6 @@ func main() {
 	configDB.MaxConnLifetime = time.Hour
 	configDB.MinConns = 2
 	configDB.MaxConns = 10
-
-	//config.ConnConfig.Logger = zapadapter.NewLogger(zapLogger) // передаем наш zap логгер
-	configDB.ConnConfig.LogLevel = pgx.LogLevelDebug
 
 	queryEngineProvider := transactor.NewTransactionManager(pool)
 	repo := repository.NewRepo(queryEngineProvider)
