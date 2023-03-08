@@ -57,7 +57,12 @@ type StocksResponse struct {
 }
 
 type ReserveStocksItem struct {
-	Sku   uint32
-	Count uint64
-	Part  bool
+	WarehouseId int64
+	Sku         uint32
+	Count       uint64
+	Part        bool
+}
+
+type Reserve struct {
+	ReserveItems []*ReserveStocksItem
 }

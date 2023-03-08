@@ -18,7 +18,8 @@ type LomsRepository interface {
 	CreateOrder(context.Context, *model.CreateOrderRequest) (*model.CreateOrderResponse, error)
 	ListOrder(context.Context, *model.ListOrderRequest) (*model.ListOrderResponse, error)
 	ClearReserves(ctx context.Context, orderId int64) error
-	//CancelOrder
+	Reserves(ctx context.Context, orderId int64) (*model.Reserve, error)
+	ReturnReserve(ctx context.Context, reserveStocksItem *model.ReserveStocksItem) error
 	Stocks(context.Context, *model.StocksRequest) (*model.StocksResponse, error)
 
 	ReserveItems(ctx context.Context, orderId int64, warehouseId int64, req *model.ReserveStocksItem) error

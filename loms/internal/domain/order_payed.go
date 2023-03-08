@@ -6,13 +6,14 @@ import (
 )
 
 func (m *service) OrderPayed(ctx context.Context, req *model.OrderPayedRequest) error {
+	// очищаем резервы
 	err := m.repository.lomsRepository.ClearReserves(ctx, req.OrderId)
 	if err != nil {
 		return err
 	}
 
 	// вызываем метод смены статуса
-	// failed
+	// payed
 	err = m.repository.lomsRepository.ChangeStatus(ctx, req.OrderId, model.OrderStatusPayed)
 	if err != nil {
 		return err

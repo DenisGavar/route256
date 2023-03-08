@@ -3,7 +3,7 @@ syntax = "proto3";
 package loms_v1;
 
 // проверить путь
-option go_package = "route256/loms/pkg/loms_v1;loms_v1";
+option go_package = "gitlab.ozon.dev/tskhelp/Homework/loms/pkg/loms_v1;loms_v1";
 
 import "google/protobuf/empty.proto";
 

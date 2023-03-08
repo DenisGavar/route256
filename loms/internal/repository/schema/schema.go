@@ -16,3 +16,9 @@ type OrderItem struct {
 	Sku   uint32 `db:"sku"`
 	Count uint16 `db:"count"`
 }
+
+type ReserveItem struct {
+	WarehouseId int64  `db:"warehouse_id"`
+	Sku         uint32 `db:"sku"`
+	Count       uint64 `db:"count"`
+}

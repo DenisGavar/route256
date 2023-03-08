@@ -18,7 +18,6 @@ func FromRepositoryToMolelStocksResponse(stockItems []*schema.StockItem) *model.
 	return &model.StocksResponse{
 		Stocks: items,
 	}
-
 }
 
 func FromRepositoryToMolelStockItem(stockItem *schema.StockItem) *model.StockItem {
@@ -49,5 +48,28 @@ func FromRepositoryToMolelOrderItem(orderItem *schema.OrderItem) *model.OrderIte
 	return &model.OrderItem{
 		Sku:   orderItem.Sku,
 		Count: orderItem.Count,
+	}
+}
+
+func FromRepositoryToMolelReserves(reserveItems []*schema.ReserveItem) *model.Reserve {
+	if reserveItems == nil {
+		return nil
+	}
+
+	items := make([]*model.ReserveStocksItem, 0, len(reserveItems))
+	for _, i := range reserveItems {
+		items = append(items, FromRepositoryToMolelReserveItem(i))
+	}
+
+	return &model.Reserve{
+		ReserveItems: items,
+	}
+}
+
+func FromRepositoryToMolelReserveItem(reserveItem *schema.ReserveItem) *model.ReserveStocksItem {
+	return &model.ReserveStocksItem{
+		WarehouseId: reserveItem.WarehouseId,
+		Sku:         reserveItem.Sku,
+		Count:       reserveItem.Count,
 	}
 }
