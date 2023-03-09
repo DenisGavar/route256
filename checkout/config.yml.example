@@ -8,8 +8,8 @@ services:
     httpPort: ""
     grpcPort: ""
   checkoutDB:
-    host: ""
-    port: ""
-    user: ""
-    password: ""
-    dbName: ""
+    hostDB: ""
+    portDB: ""
+    userDB: ""
+    passwordDB: ""
+    nameDB: ""

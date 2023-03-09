@@ -2,12 +2,12 @@
 -- +goose StatementBegin
 INSERT INTO items_stocks (sku, warehouse_id, count)
 VALUES
-(1, 11, 111),
-(2, 11, 222),
-(3, 11, 333),
-(1, 22, 111),
-(2, 22, 222),
-(3, 22, 333)
+(1076963, 1, 111),
+(1076963, 2, 222),
+(1076963, 3, 333),
+(1148162, 1, 111),
+(1148162, 2, 222),
+(1148162, 3, 333)
 -- +goose StatementEnd
 
 -- +goose Down

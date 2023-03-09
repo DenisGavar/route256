@@ -13,7 +13,7 @@ import (
 	desc "route256/loms/pkg/loms_v1"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v4/pgxpool"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -45,7 +45,7 @@ func main() {
 		config.ConfigData.Services.LomsDB.DBName)
 
 	// пул соединений
-	pool, err := pgxpool.New(ctx, psqlConn)
+	pool, err := pgxpool.Connect(ctx, psqlConn)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -68,8 +68,6 @@ func main() {
 	desc.RegisterLOMSV1Server(s, lomsV1.NewLomsV1(businessLogic))
 
 	log.Println("grpc server at", config.ConfigData.Services.Loms.Port)
-	log.Println("loms address", lis.Addr())
-	log.Println("loms address", lis.Addr().Network())
 
 	if err := s.Serve(lis); err != nil {
 		log.Fatal("failed to serve", err)

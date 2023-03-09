@@ -75,3 +75,15 @@ func ToPurchaseResponseDesc(purchaseResponse *model.PurchaseResponse) *desc.Purc
 		OrderId: purchaseResponse.OrderId,
 	}
 }
+
+func ToDeleteFromCartRequestModel(deleteFromCartRequest *desc.DeleteFromCartRequest) *model.DeleteFromCartRequest {
+	if deleteFromCartRequest == nil {
+		return nil
+	}
+
+	return &model.DeleteFromCartRequest{
+		User:  deleteFromCartRequest.User,
+		Sku:   deleteFromCartRequest.Sku,
+		Count: deleteFromCartRequest.Count,
+	}
+}

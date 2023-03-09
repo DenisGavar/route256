@@ -18,6 +18,9 @@ type TransactionManager interface {
 
 type CheckoutRepository interface {
 	AddToCart(ctx context.Context, addToCartRequest *model.AddToCartRequest) error
+	ListCart(ctx context.Context, listCartRequest *model.ListCartRequest) (*model.ListCartResponse, error)
+	DeleteFromCart(ctx context.Context, part bool, deleteFromRequest *model.DeleteFromCartRequest) error
+	GetCartItemCount(ctx context.Context, userId int64, sku uint32) (uint32, error)
 }
 
 type repository struct {
@@ -36,6 +39,7 @@ var _ Service = (*service)(nil)
 
 type Service interface {
 	AddToCart(context.Context, *model.AddToCartRequest) error
+	DeleteFromCart(context.Context, *model.DeleteFromCartRequest) error
 	ListCart(context.Context, *model.ListCartRequest) (*model.ListCartResponse, error)
 	Purchase(context.Context, *model.PurchaseRequest) (*model.PurchaseResponse, error)
 }

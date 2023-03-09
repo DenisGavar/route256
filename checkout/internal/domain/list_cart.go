@@ -12,31 +12,21 @@ func (s *service) ListCart(ctx context.Context, req *model.ListCartRequest) (*mo
 	// получаем список товаров в корзине по user64, в цикле опрашиваем ProductService
 	// пока списка товаров нет, идём в ProductService за произвольным товаром
 
-	var skus []uint32
-	skus = append(skus, 1076963, 1148162)
+	response, err := s.repository.checkoutRepository.ListCart(ctx, req)
+	if err != nil {
+		return nil, err
+	}
 
-	cartItems := make([]*model.CartItem, 0, len(skus))
-
-	var totalPrice uint32
-	for _, sku := range skus {
-		product, err := s.productServiceClient.GetProduct(ctx, &product.GetProductRequest{Sku: sku})
+	for _, cartItem := range response.Items {
+		product, err := s.productServiceClient.GetProduct(ctx, &product.GetProductRequest{Sku: cartItem.Sku})
 		if err != nil {
 			return nil, errors.WithMessage(err, "getting product")
 		}
 
-		item := &model.CartItem{
-			Sku:   sku,
-			Count: 1,
-			Name:  product.GetName(),
-			Price: product.GetPrice(),
-		}
-
-		cartItems = append(cartItems, item)
-		totalPrice += product.GetPrice() * item.Count
+		cartItem.Name = product.Name
+		cartItem.Price = product.Price
+		response.TotalPrice += product.Price * cartItem.Count
 	}
 
-	return &model.ListCartResponse{
-		Items:      cartItems,
-		TotalPrice: totalPrice,
-	}, nil
+	return response, nil
 }

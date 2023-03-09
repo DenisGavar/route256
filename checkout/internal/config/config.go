@@ -33,11 +33,11 @@ type Checkout struct {
 }
 
 type CheckoutDB struct {
-	Host     string `yaml:"host"`
-	Port     string `yaml:"port"`
-	User     string `yaml:"user"`
-	Password string `yaml:"password"`
-	DBName   string `yaml:"dbName"`
+	Host     string `yaml:"hostDB"`
+	Port     string `yaml:"portDB"`
+	User     string `yaml:"userDB"`
+	Password string `yaml:"passwordDB"`
+	DBName   string `yaml:"nameDB"`
 }
 
 var ConfigData ConfigStruct

@@ -18,7 +18,7 @@ import (
 	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
@@ -73,7 +73,6 @@ func runGRPC() error {
 		return err
 	}
 	defer lomsConn.Close()
-	log.Println("loms state: ", lomsConn.GetState())
 	lomsClient := loms.New(lomsConn)
 
 	productServiceConn, err := grpc.Dial(config.ConfigData.Services.ProductService.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -96,7 +95,7 @@ func runGRPC() error {
 		config.ConfigData.Services.CheckoutDB.DBName)
 
 	// пул соединений
-	pool, err := pgxpool.New(ctx, psqlConn)
+	pool, err := pgxpool.Connect(ctx, psqlConn)
 	if err != nil {
 		log.Fatal(err)
 	}

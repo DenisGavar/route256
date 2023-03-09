@@ -8,6 +8,14 @@ type AddToCartRequest struct {
 	Count uint32
 }
 
+type DeleteFromCartRequest struct {
+	// user ID
+	User int64
+	// stock keeping unit - единица складского учёта
+	Sku   uint32
+	Count uint32
+}
+
 type ListCartRequest struct {
 	// user ID
 	User int64

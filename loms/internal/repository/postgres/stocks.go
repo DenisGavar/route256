@@ -7,7 +7,7 @@ import (
 	"route256/loms/internal/repository/schema"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/georgysavva/scany/v2/pgxscan"
+	"github.com/georgysavva/scany/pgxscan"
 )
 
 func (r *repo) Stocks(ctx context.Context, stocksRequest *model.StocksRequest) (*model.StocksResponse, error) {
