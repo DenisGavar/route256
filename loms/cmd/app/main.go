@@ -69,6 +69,7 @@ func main() {
 
 	log.Println("grpc server at", config.ConfigData.Services.Loms.Port)
 	log.Println("loms address", lis.Addr())
+	log.Println("loms address", lis.Addr().Network())
 
 	if err := s.Serve(lis); err != nil {
 		log.Fatal("failed to serve", err)

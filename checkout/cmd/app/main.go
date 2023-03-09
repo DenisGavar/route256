@@ -73,6 +73,7 @@ func runGRPC() error {
 		return err
 	}
 	defer lomsConn.Close()
+	log.Println("loms state: ", lomsConn.GetState())
 	lomsClient := loms.New(lomsConn)
 
 	productServiceConn, err := grpc.Dial(config.ConfigData.Services.ProductService.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))

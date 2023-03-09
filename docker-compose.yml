@@ -30,10 +30,10 @@ services:
     networks:
       - net-checkout    
   # service
-  checkout:
-    image: checkout
+  app-checkout:
+    image: app-checkout
     build: ./checkout/
-    container_name: 'checkout'
+    container_name: 'app-checkout'
     restart: unless-stopped
     environment:
       DATABASE_URL: postgres://user:password@postgres:5432/checkout?sslmode=disable
@@ -68,10 +68,10 @@ services:
     networks:
       - net-loms    
   #service
-  loms:
-    image: loms
+  app-loms:
+    image: app-loms
     build: ./loms/
-    container_name: 'loms'
+    container_name: 'app-loms'
     restart: unless-stopped
     environment:
       DATABASE_URL: postgres://user:password@postgres:5432/loms?sslmode=disable
