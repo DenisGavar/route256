@@ -68,6 +68,7 @@ func main() {
 	desc.RegisterLOMSV1Server(s, lomsV1.NewLomsV1(businessLogic))
 
 	log.Println("grpc server at", config.ConfigData.Services.Loms.Port)
+	log.Println("loms address", lis.Addr())
 
 	if err := s.Serve(lis); err != nil {
 		log.Fatal("failed to serve", err)

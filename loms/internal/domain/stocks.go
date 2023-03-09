@@ -5,8 +5,9 @@ import (
 	"route256/loms/internal/domain/model"
 )
 
-func (m *service) Stocks(ctx context.Context, req *model.StocksRequest) (*model.StocksResponse, error) {
-	response, err := m.repository.lomsRepository.Stocks(ctx, req)
+func (s *service) Stocks(ctx context.Context, req *model.StocksRequest) (*model.StocksResponse, error) {
+	// получаем остатки на складах
+	response, err := s.repository.lomsRepository.Stocks(ctx, req)
 	if err != nil {
 		return nil, err
 	}

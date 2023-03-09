@@ -5,8 +5,8 @@ import (
 	"route256/loms/internal/domain/model"
 )
 
-func (m *service) ListOrder(ctx context.Context, req *model.ListOrderRequest) (*model.ListOrderResponse, error) {
-	response, err := m.repository.lomsRepository.ListOrder(ctx, req)
+func (s *service) ListOrder(ctx context.Context, req *model.ListOrderRequest) (*model.ListOrderResponse, error) {
+	response, err := s.repository.lomsRepository.ListOrder(ctx, req)
 	if err != nil {
 		return nil, err
 	}

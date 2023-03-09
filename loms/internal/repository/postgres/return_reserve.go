@@ -9,7 +9,7 @@ import (
 )
 
 func (r *repo) ReturnReserve(ctx context.Context, reserveStocksItem *model.ReserveStocksItem) error {
-	// получаем резервы
+	// возвращаем резервы на склад
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)

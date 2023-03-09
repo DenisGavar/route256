@@ -4,6 +4,7 @@ import (
 	"context"
 	"route256/loms/internal/domain/model"
 	"route256/loms/internal/repository/schema"
+	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/v2/pgxscan"
@@ -16,8 +17,8 @@ func (r *repo) CreateOrder(ctx context.Context, req *model.CreateOrderRequest) (
 
 	// создаём заказ
 	query := pgBuilder.Insert(ordersTable).
-		Columns("user_id", "status").
-		Values(req.User, model.OrderStatusNew).
+		Columns("user_id", "status", "created_at", "changed_at").
+		Values(req.User, model.OrderStatusNew, time.Now(), time.Now()).
 		Suffix("RETURNING id")
 
 	rawQuery, args, err := query.ToSql()

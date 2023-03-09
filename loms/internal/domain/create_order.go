@@ -5,9 +5,9 @@ import (
 	"route256/loms/internal/domain/model"
 )
 
-func (m *service) CreateOrder(ctx context.Context, req *model.CreateOrderRequest) (*model.CreateOrderResponse, error) {
+func (s *service) CreateOrder(ctx context.Context, req *model.CreateOrderRequest) (*model.CreateOrderResponse, error) {
 	// создаём заказ, получаем его id
-	response, err := m.repository.lomsRepository.CreateOrder(ctx, req)
+	response, err := s.repository.lomsRepository.CreateOrder(ctx, req)
 	if err != nil {
 		return nil, err
 	}
@@ -15,11 +15,11 @@ func (m *service) CreateOrder(ctx context.Context, req *model.CreateOrderRequest
 	// дополняем структуру orderID
 	req.OrderId = response.OrderId
 
-	err = m.repository.transactionManager.RunRepeatableRead(ctx, func(ctxTX context.Context) error {
+	err = s.repository.transactionManager.RunRepeatableRead(ctx, func(ctxTX context.Context) error {
 		// резервируем товары из заказа с его id
 		for _, orderItem := range req.Items {
 			// проверяем наличие каждого товара на складах
-			stocks, err := m.repository.lomsRepository.Stocks(ctxTX, &model.StocksRequest{Sku: orderItem.Sku})
+			stocks, err := s.repository.lomsRepository.Stocks(ctxTX, &model.StocksRequest{Sku: orderItem.Sku})
 			if err != nil {
 				return err
 			}
@@ -56,8 +56,9 @@ func (m *service) CreateOrder(ctx context.Context, req *model.CreateOrderRequest
 				return ErrNotEnoughItems
 			}
 
+			// резервируем товары
 			for warehouseId, reserveStockItem := range needToReserve {
-				if err := m.repository.lomsRepository.ReserveItems(ctxTX, response.OrderId, warehouseId, &reserveStockItem); err != nil {
+				if err := s.repository.lomsRepository.ReserveItems(ctxTX, response.OrderId, warehouseId, &reserveStockItem); err != nil {
 					return err
 				}
 			}
@@ -74,14 +75,14 @@ func (m *service) CreateOrder(ctx context.Context, req *model.CreateOrderRequest
 
 		// вызываем метод смены статуса
 		// failed
-		err = m.repository.lomsRepository.ChangeStatus(ctx, response.OrderId, model.OrderStatusFailed)
+		err = s.repository.lomsRepository.ChangeStatus(ctx, response.OrderId, model.OrderStatusFailed)
 		if err != nil {
 			return nil, err
 		}
 	} else {
 		// вызываем метод смены статуса
 		// awaiting payment
-		err = m.repository.lomsRepository.ChangeStatus(ctx, response.OrderId, model.OrderStatusAwaitingPayment)
+		err = s.repository.lomsRepository.ChangeStatus(ctx, response.OrderId, model.OrderStatusAwaitingPayment)
 		if err != nil {
 			return nil, err
 		}

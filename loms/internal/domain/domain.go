@@ -15,13 +15,12 @@ type TransactionManager interface {
 }
 
 type LomsRepository interface {
-	CreateOrder(context.Context, *model.CreateOrderRequest) (*model.CreateOrderResponse, error)
-	ListOrder(context.Context, *model.ListOrderRequest) (*model.ListOrderResponse, error)
+	CreateOrder(ctx context.Context, createOrderRequest *model.CreateOrderRequest) (*model.CreateOrderResponse, error)
+	ListOrder(ctx context.Context, listOrderRequest *model.ListOrderRequest) (*model.ListOrderResponse, error)
 	ClearReserves(ctx context.Context, orderId int64) error
 	Reserves(ctx context.Context, orderId int64) (*model.Reserve, error)
 	ReturnReserve(ctx context.Context, reserveStocksItem *model.ReserveStocksItem) error
-	Stocks(context.Context, *model.StocksRequest) (*model.StocksResponse, error)
-
+	Stocks(ctx context.Context, stocksRequest *model.StocksRequest) (*model.StocksResponse, error)
 	ReserveItems(ctx context.Context, orderId int64, warehouseId int64, req *model.ReserveStocksItem) error
 	ChangeStatus(ctx context.Context, orderId int64, status string) error
 }
@@ -31,8 +30,8 @@ type repository struct {
 	transactionManager TransactionManager
 }
 
-func NewRepository(lomsRepository LomsRepository, transactionManager TransactionManager) *repository {
-	return &repository{
+func NewRepository(lomsRepository LomsRepository, transactionManager TransactionManager) repository {
+	return repository{
 		lomsRepository:     lomsRepository,
 		transactionManager: transactionManager,
 	}
@@ -49,10 +48,10 @@ type Service interface {
 }
 
 type service struct {
-	repository *repository
+	repository repository
 }
 
-func NewService(repository *repository) *service {
+func NewService(repository repository) *service {
 	return &service{
 		repository: repository,
 	}

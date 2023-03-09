@@ -1,33 +1,33 @@
 package converter
 
 import (
-	"route256/checkout/internal/domain"
+	"route256/checkout/internal/domain/model"
 	desc "route256/checkout/pkg/checkout_v1"
 )
 
-func ToAddToCartRequestModel(addToCartRequest *desc.AddToCartRequest) *domain.AddToCartRequest {
+func ToAddToCartRequestModel(addToCartRequest *desc.AddToCartRequest) *model.AddToCartRequest {
 	if addToCartRequest == nil {
 		return nil
 	}
 
-	return &domain.AddToCartRequest{
+	return &model.AddToCartRequest{
 		User:  addToCartRequest.GetUser(),
 		Sku:   addToCartRequest.GetSku(),
 		Count: addToCartRequest.GetCount(),
 	}
 }
 
-func ToListCartRequestModel(listCartRequest *desc.ListCartRequest) *domain.ListCartRequest {
+func ToListCartRequestModel(listCartRequest *desc.ListCartRequest) *model.ListCartRequest {
 	if listCartRequest == nil {
 		return nil
 	}
 
-	return &domain.ListCartRequest{
+	return &model.ListCartRequest{
 		User: listCartRequest.GetUser(),
 	}
 }
 
-func ToListCartResponseDesc(listCartResponse *domain.ListCartResponse) *desc.ListCartResponse {
+func ToListCartResponseDesc(listCartResponse *model.ListCartResponse) *desc.ListCartResponse {
 	if listCartResponse == nil {
 		return nil
 	}
@@ -43,7 +43,7 @@ func ToListCartResponseDesc(listCartResponse *domain.ListCartResponse) *desc.Lis
 	}
 }
 
-func ToCartItemDesc(cartItem *domain.CartItem) *desc.CartItem {
+func ToCartItemDesc(cartItem *model.CartItem) *desc.CartItem {
 	if cartItem == nil {
 		return nil
 	}
@@ -56,17 +56,17 @@ func ToCartItemDesc(cartItem *domain.CartItem) *desc.CartItem {
 	}
 }
 
-func ToPurchaseRequestModel(purchaseRequest *desc.PurchaseRequest) *domain.PurchaseRequest {
+func ToPurchaseRequestModel(purchaseRequest *desc.PurchaseRequest) *model.PurchaseRequest {
 	if purchaseRequest == nil {
 		return nil
 	}
 
-	return &domain.PurchaseRequest{
+	return &model.PurchaseRequest{
 		User: purchaseRequest.User,
 	}
 }
 
-func ToPurchaseResponseDesc(purchaseResponse *domain.PurchaseResponse) *desc.PurchaseResponse {
+func ToPurchaseResponseDesc(purchaseResponse *model.PurchaseResponse) *desc.PurchaseResponse {
 	if purchaseResponse == nil {
 		return nil
 	}

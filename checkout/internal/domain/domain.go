@@ -2,16 +2,42 @@ package domain
 
 import (
 	"context"
+	"errors"
+	"route256/checkout/internal/domain/model"
 	product "route256/checkout/pkg/product-service_v1"
 	loms "route256/loms/pkg/loms_v1"
 )
 
-var _ Model = (*model)(nil)
+var (
+	ErrNotEnoughItems = errors.New("not enough items")
+)
 
-type Model interface {
-	AddToCart(context.Context, *AddToCartRequest) error
-	ListCart(context.Context, *ListCartRequest) (*ListCartResponse, error)
-	Purchase(context.Context, *PurchaseRequest) (*PurchaseResponse, error)
+type TransactionManager interface {
+	RunRepeatableRead(ctx context.Context, f func(ctxTX context.Context) error) error
+}
+
+type CheckoutRepository interface {
+	AddToCart(ctx context.Context, addToCartRequest *model.AddToCartRequest) error
+}
+
+type repository struct {
+	checkoutRepository CheckoutRepository
+	transactionManager TransactionManager
+}
+
+func NewRepository(checkoutRepository CheckoutRepository, transactionManager TransactionManager) repository {
+	return repository{
+		checkoutRepository: checkoutRepository,
+		transactionManager: transactionManager,
+	}
+}
+
+var _ Service = (*service)(nil)
+
+type Service interface {
+	AddToCart(context.Context, *model.AddToCartRequest) error
+	ListCart(context.Context, *model.ListCartRequest) (*model.ListCartResponse, error)
+	Purchase(context.Context, *model.PurchaseRequest) (*model.PurchaseResponse, error)
 }
 
 type ProductServiceClient interface {
@@ -23,14 +49,16 @@ type LomsClient interface {
 	CreateOrder(context.Context, *loms.CreateOrderRequest) (*loms.CreateOrderResponse, error)
 }
 
-type model struct {
+type service struct {
 	lomsClient           LomsClient
 	productServiceClient ProductServiceClient
+	repository           repository
 }
 
-func NewModel(lomsClient LomsClient, productServiceClient ProductServiceClient) *model {
-	return &model{
+func NewService(lomsClient LomsClient, productServiceClient ProductServiceClient, repository repository) *service {
+	return &service{
 		lomsClient:           lomsClient,
 		productServiceClient: productServiceClient,
+		repository:           repository,
 	}
 }

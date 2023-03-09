@@ -1,9 +1,10 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS baskets (
-    user_id int8 PRIMARY KEY,
+    user_id int8,
     sku int8,
-    count int4
+    count int4,
+    PRIMARY KEY (user_id, sku)
 );
 -- +goose StatementEnd
 

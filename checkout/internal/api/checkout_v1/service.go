@@ -8,10 +8,10 @@ import (
 type Implementation struct {
 	desc.UnimplementedCheckoutV1Server
 
-	checkoutModel domain.Model
+	checkoutModel domain.Service
 }
 
-func NewCheckoutV1(checkoutModel domain.Model) *Implementation {
+func NewCheckoutV1(checkoutModel domain.Service) *Implementation {
 	return &Implementation{
 		desc.UnimplementedCheckoutV1Server{},
 		checkoutModel,
