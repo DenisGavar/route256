@@ -10,14 +10,14 @@ func (s *service) DeleteFromCart(ctx context.Context, req *model.DeleteFromCartR
 
 	err := s.repository.transactionManager.RunRepeatableRead(ctx, func(ctxTX context.Context) error {
 		// проверяем, полностью надо всё удалить или только часть
-		count, err := s.repository.checkoutRepository.GetCartItemCount(ctx, req.User, req.Sku)
+		count, err := s.repository.checkoutRepository.GetCartItemCount(ctxTX, req.User, req.Sku)
 		if err != nil {
 			return err
 		}
 
 		part := (req.Count < count)
 
-		err = s.repository.checkoutRepository.DeleteFromCart(ctx, part, req)
+		err = s.repository.checkoutRepository.DeleteFromCart(ctxTX, part, req)
 		if err != nil {
 			return err
 		}

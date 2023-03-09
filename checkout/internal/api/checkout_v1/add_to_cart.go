@@ -12,7 +12,7 @@ import (
 func (i *Implementation) AddToCart(ctx context.Context, req *desc.AddToCartRequest) (*emptypb.Empty, error) {
 	log.Printf("addToCart: %+v", req)
 
-	err := i.checkoutModel.AddToCart(ctx, converter.ToAddToCartRequestModel(req))
+	err := i.checkoutModel.AddToCart(ctx, converter.FromDescToMolelAddToCartRequest(req))
 	if err != nil {
 		return nil, err
 	}

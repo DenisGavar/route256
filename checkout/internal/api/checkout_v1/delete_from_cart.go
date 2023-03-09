@@ -12,7 +12,7 @@ import (
 func (i *Implementation) DeleteFromCart(ctx context.Context, req *desc.DeleteFromCartRequest) (*emptypb.Empty, error) {
 	log.Printf("deleteFromCart: %+v", req)
 
-	err := i.checkoutModel.DeleteFromCart(ctx, converter.ToDeleteFromCartRequestModel(req))
+	err := i.checkoutModel.DeleteFromCart(ctx, converter.FromDescToMolelDeleteFromCartRequest(req))
 	if err != nil {
 		return nil, err
 	}

@@ -5,7 +5,7 @@ import (
 	desc "route256/checkout/pkg/checkout_v1"
 )
 
-func ToAddToCartRequestModel(addToCartRequest *desc.AddToCartRequest) *model.AddToCartRequest {
+func FromDescToMolelAddToCartRequest(addToCartRequest *desc.AddToCartRequest) *model.AddToCartRequest {
 	if addToCartRequest == nil {
 		return nil
 	}
@@ -17,7 +17,7 @@ func ToAddToCartRequestModel(addToCartRequest *desc.AddToCartRequest) *model.Add
 	}
 }
 
-func ToListCartRequestModel(listCartRequest *desc.ListCartRequest) *model.ListCartRequest {
+func FromDescToMolelListCartRequest(listCartRequest *desc.ListCartRequest) *model.ListCartRequest {
 	if listCartRequest == nil {
 		return nil
 	}
@@ -27,14 +27,14 @@ func ToListCartRequestModel(listCartRequest *desc.ListCartRequest) *model.ListCa
 	}
 }
 
-func ToListCartResponseDesc(listCartResponse *model.ListCartResponse) *desc.ListCartResponse {
+func FromMolelToDescListCartResponse(listCartResponse *model.ListCartResponse) *desc.ListCartResponse {
 	if listCartResponse == nil {
 		return nil
 	}
 
 	items := make([]*desc.CartItem, 0, len(listCartResponse.Items))
 	for _, i := range listCartResponse.Items {
-		items = append(items, ToCartItemDesc(i))
+		items = append(items, FromMolelToDescCartItem(i))
 	}
 
 	return &desc.ListCartResponse{
@@ -43,7 +43,7 @@ func ToListCartResponseDesc(listCartResponse *model.ListCartResponse) *desc.List
 	}
 }
 
-func ToCartItemDesc(cartItem *model.CartItem) *desc.CartItem {
+func FromMolelToDescCartItem(cartItem *model.CartItem) *desc.CartItem {
 	if cartItem == nil {
 		return nil
 	}
@@ -56,7 +56,7 @@ func ToCartItemDesc(cartItem *model.CartItem) *desc.CartItem {
 	}
 }
 
-func ToPurchaseRequestModel(purchaseRequest *desc.PurchaseRequest) *model.PurchaseRequest {
+func FromDescToMolelPurchaseRequest(purchaseRequest *desc.PurchaseRequest) *model.PurchaseRequest {
 	if purchaseRequest == nil {
 		return nil
 	}
@@ -66,7 +66,7 @@ func ToPurchaseRequestModel(purchaseRequest *desc.PurchaseRequest) *model.Purcha
 	}
 }
 
-func ToPurchaseResponseDesc(purchaseResponse *model.PurchaseResponse) *desc.PurchaseResponse {
+func FromMolelToDescPurchaseResponse(purchaseResponse *model.PurchaseResponse) *desc.PurchaseResponse {
 	if purchaseResponse == nil {
 		return nil
 	}
@@ -76,7 +76,7 @@ func ToPurchaseResponseDesc(purchaseResponse *model.PurchaseResponse) *desc.Purc
 	}
 }
 
-func ToDeleteFromCartRequestModel(deleteFromCartRequest *desc.DeleteFromCartRequest) *model.DeleteFromCartRequest {
+func FromDescToMolelDeleteFromCartRequest(deleteFromCartRequest *desc.DeleteFromCartRequest) *model.DeleteFromCartRequest {
 	if deleteFromCartRequest == nil {
 		return nil
 	}
