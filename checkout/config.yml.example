@@ -1,0 +1,9 @@
+services:
+  loms:
+    address: ""
+  productService:
+    address: ""
+    token: ""
+  checkout:
+    httpPort: ""
+    grpcPort: ""

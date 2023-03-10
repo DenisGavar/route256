@@ -2,20 +2,26 @@ package domain
 
 import (
 	"context"
+	loms "route256/loms/pkg/loms_v1"
 
 	"github.com/pkg/errors"
 )
 
-type Order struct {
-	OrderID int64
+type PurchaseRequest struct {
+	// user ID
+	User int64
 }
 
-func (m *Model) Purchase(ctx context.Context, user int64) (*Order, error) {
+type PurchaseResponse struct {
+	OrderId int64
+}
 
-	order, err := m.orderCreator.CreateOrder(ctx, user)
+func (m *model) Purchase(ctx context.Context, req *PurchaseRequest) (*PurchaseResponse, error) {
+
+	order, err := m.lomsClient.CreateOrder(ctx, &loms.CreateOrderRequest{User: req.User})
 	if err != nil {
-		return order, errors.WithMessage(err, "create order")
+		return nil, errors.WithMessage(err, "create order")
 	}
 
-	return order, nil
+	return &PurchaseResponse{OrderId: order.GetOrderId()}, nil
 }

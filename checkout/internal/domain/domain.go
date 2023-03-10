@@ -1,29 +1,36 @@
 package domain
 
-import "context"
+import (
+	"context"
+	product "route256/checkout/pkg/product-service_v1"
+	loms "route256/loms/pkg/loms_v1"
+)
 
-type StocksChecker interface {
-	Stocks(ctx context.Context, sku uint32) ([]Stock, error)
+var _ Model = (*model)(nil)
+
+type Model interface {
+	AddToCart(context.Context, *AddToCartRequest) error
+	ListCart(context.Context, *ListCartRequest) (*ListCartResponse, error)
+	Purchase(context.Context, *PurchaseRequest) (*PurchaseResponse, error)
 }
 
-type ProductGetter interface {
-	GetProduct(ctx context.Context, sku uint32) (*Product, error)
+type ProductServiceClient interface {
+	GetProduct(context.Context, *product.GetProductRequest) (*product.GetProductResponse, error)
 }
 
-type OrderCreator interface {
-	CreateOrder(ctx context.Context, user int64) (*Order, error)
+type LomsClient interface {
+	Stocks(context.Context, *loms.StocksRequest) (*loms.StocksResponse, error)
+	CreateOrder(context.Context, *loms.CreateOrderRequest) (*loms.CreateOrderResponse, error)
 }
 
-type Model struct {
-	stocksChecker StocksChecker
-	productGetter ProductGetter
-	orderCreator  OrderCreator
+type model struct {
+	lomsClient           LomsClient
+	productServiceClient ProductServiceClient
 }
 
-func New(stocksChecker StocksChecker, orderCreator OrderCreator, productGetter ProductGetter) *Model {
-	return &Model{
-		stocksChecker: stocksChecker,
-		orderCreator:  orderCreator,
-		productGetter: productGetter,
+func NewModel(lomsClient LomsClient, productServiceClient ProductServiceClient) *model {
+	return &model{
+		lomsClient:           lomsClient,
+		productServiceClient: productServiceClient,
 	}
 }

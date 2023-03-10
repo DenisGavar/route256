@@ -18,16 +18,17 @@ type Services struct {
 }
 
 type Loms struct {
-	Url string `yaml:"url"`
+	Address string `yaml:"address"`
 }
 
 type ProductService struct {
-	Url   string `yaml:"url"`
-	Token string `yaml:"token"`
+	Address string `yaml:"address"`
+	Token   string `yaml:"token"`
 }
 
 type Checkout struct {
-	Port string `yaml:"port"`
+	HTTPPort string `yaml:"httpPort"`
+	GRPCPort string `yaml:"grpcPort"`
 }
 
 var ConfigData ConfigStruct
