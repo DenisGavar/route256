@@ -6,10 +6,6 @@ import (
 )
 
 func FromRepositoryToMolelStocksResponse(stockItems []*schema.StockItem) *model.StocksResponse {
-	if stockItems == nil {
-		return nil
-	}
-
 	items := make([]*model.StockItem, 0, len(stockItems))
 	for _, i := range stockItems {
 		items = append(items, FromRepositoryToMolelStockItem(i))
@@ -28,7 +24,7 @@ func FromRepositoryToMolelStockItem(stockItem *schema.StockItem) *model.StockIte
 }
 
 func FromRepositoryToMolelListOrderResponse(order *schema.Order, orderItems []*schema.OrderItem) *model.ListOrderResponse {
-	if order == nil || orderItems == nil {
+	if order == nil {
 		return nil
 	}
 
@@ -52,10 +48,6 @@ func FromRepositoryToMolelOrderItem(orderItem *schema.OrderItem) *model.OrderIte
 }
 
 func FromRepositoryToMolelReserves(reserveItems []*schema.ReserveItem) *model.Reserve {
-	if reserveItems == nil {
-		return nil
-	}
-
 	items := make([]*model.ReserveStocksItem, 0, len(reserveItems))
 	for _, i := range reserveItems {
 		items = append(items, FromRepositoryToMolelReserveItem(i))

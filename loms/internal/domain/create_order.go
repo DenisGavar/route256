@@ -25,7 +25,7 @@ func (s *service) CreateOrder(ctx context.Context, req *model.CreateOrderRequest
 			}
 
 			var reservedCount uint64
-			// собираем на каких складах нсколько нужно взять товара
+			// собираем на каких складах сколько нужно взять товара
 			needToReserve := make(map[int64]model.ReserveStocksItem, 1)
 
 			for _, stocksItem := range stocks.Stocks {

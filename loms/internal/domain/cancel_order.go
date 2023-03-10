@@ -9,21 +9,21 @@ func (s *service) CancelOrder(ctx context.Context, req *model.CancelOrderRequest
 
 	err := s.repository.transactionManager.RunRepeatableRead(ctx, func(ctxTX context.Context) error {
 		// получаем резервы, которые надо вернуть на склад
-		needToDropReserve, err := s.repository.lomsRepository.Reserves(ctx, req.OrderId)
+		needToDropReserve, err := s.repository.lomsRepository.Reserves(ctxTX, req.OrderId)
 		if err != nil {
 			return err
 		}
 
 		// возвращаем резервы на склад
 		for _, reserveItem := range needToDropReserve.ReserveItems {
-			err := s.repository.lomsRepository.ReturnReserve(ctx, reserveItem)
+			err := s.repository.lomsRepository.ReturnReserve(ctxTX, reserveItem)
 			if err != nil {
 				return err
 			}
 		}
 
 		// очищаем резервы
-		err = s.repository.lomsRepository.ClearReserves(ctx, req.OrderId)
+		err = s.repository.lomsRepository.ClearReserves(ctxTX, req.OrderId)
 		if err != nil {
 			return err
 		}

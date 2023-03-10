@@ -19,9 +19,15 @@ func (s *service) Purchase(ctx context.Context, req *model.PurchaseRequest) (*mo
 
 	err = s.repository.transactionManager.RunRepeatableRead(ctx, func(ctxTX context.Context) error {
 		// получаем товары из корзины
-		listCart, err := s.repository.checkoutRepository.ListCart(ctx, &model.ListCartRequest{User: req.User})
+		listCart, err := s.repository.checkoutRepository.ListCart(ctxTX, &model.ListCartRequest{User: req.User})
 		if err != nil {
 			return err
+		}
+
+		// если корзина пустая, то выходим
+		// возвращаем order_id = 0
+		if len(listCart.Items) == 0 {
+			return nil
 		}
 
 		// дополняем структуру товарами

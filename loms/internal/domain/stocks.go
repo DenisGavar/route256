@@ -12,7 +12,5 @@ func (s *service) Stocks(ctx context.Context, req *model.StocksRequest) (*model.
 		return nil, err
 	}
 
-	// нужна проверка, если ничего не вернулось
-
 	return response, nil
 }

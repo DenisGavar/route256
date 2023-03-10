@@ -11,8 +11,5 @@ func (s *service) ListOrder(ctx context.Context, req *model.ListOrderRequest) (*
 		return nil, err
 	}
 
-	// нужна проверка, если ничего не вернулось
-	// либо если вернулся заказ без строк
-
 	return response, nil
 }

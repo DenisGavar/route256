@@ -6,6 +6,25 @@ networks:
 
 services:
   # checkout
+  # pgbouncer
+  pgbouncer-checkout:
+    image: edoburu/pgbouncer
+    environment:
+      - DB_USER=user
+      - DB_PASSWORD=password
+      - DB_HOST=postgres-checkout
+      - DB_PORT=5433
+      - DB_NAME=checkout
+      - POOL_MODE=session
+      - ADMIN_USERS=postgres,user
+      - AUTH_TYPE=plain
+      - LISTEN_PORT=6433
+    ports:
+      - "6433:6433"
+    depends_on:
+      - postgres-checkout
+    networks:
+      - net
   # database
   postgres-checkout:
     image: postgres:15.1
@@ -38,16 +57,36 @@ services:
     container_name: 'checkout'
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgres://user:password@postgres-checkout:5433/checkout?sslmode=disable
+      DATABASE_URL: postgres://user:password@pgbouncer-checkout:6433/checkout?sslmode=disable
     ports:
       - "8080:8080"
       - "8090:8090"
     depends_on:
       - postgres-checkout
+      - pgbouncer-checkout
     networks:
       - net
 
   # loms
+  # pgbouncer
+  pgbouncer-loms:
+    image: edoburu/pgbouncer
+    environment:
+      - DB_USER=user
+      - DB_PASSWORD=password
+      - DB_HOST=postgres-loms
+      - DB_PORT=5432
+      - DB_NAME=loms
+      - POOL_MODE=session
+      - ADMIN_USERS=postgres,user
+      - AUTH_TYPE=plain
+      - LISTEN_PORT=6432
+    ports:
+      - "6432:6432"
+    depends_on:
+      - postgres-loms
+    networks:
+      - net
   # database
   postgres-loms:
     image: postgres:15.1
@@ -76,11 +115,12 @@ services:
     container_name: 'loms'
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgres://user:password@postgres-loms:5432/loms?sslmode=disable
+      DATABASE_URL: postgres://user:password@pgbouncer-loms:6432/loms?sslmode=disable
     ports:
       - "8081:8081"
     depends_on:
       - postgres-loms
+      - pgbouncer-loms
     networks:
       - net
 

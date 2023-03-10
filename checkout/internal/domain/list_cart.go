@@ -9,14 +9,13 @@ import (
 )
 
 func (s *service) ListCart(ctx context.Context, req *model.ListCartRequest) (*model.ListCartResponse, error) {
-	// получаем список товаров в корзине по user64, в цикле опрашиваем ProductService
-	// пока списка товаров нет, идём в ProductService за произвольным товаром
-
+	// получаем список товаров в корзине
 	response, err := s.repository.checkoutRepository.ListCart(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
+	// для каждого товара получаем наименование и цену, считаем итого
 	for _, cartItem := range response.Items {
 		product, err := s.productServiceClient.GetProduct(ctx, &product.GetProductRequest{Sku: cartItem.Sku})
 		if err != nil {

@@ -87,7 +87,7 @@ func runGRPC() error {
 	ctx, cacnel := context.WithCancel(context.Background())
 	defer cacnel()
 
-	psqlConn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+	psqlConn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s",
 		config.ConfigData.Services.CheckoutDB.User,
 		config.ConfigData.Services.CheckoutDB.Password,
 		config.ConfigData.Services.CheckoutDB.Host,

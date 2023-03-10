@@ -37,7 +37,7 @@ func main() {
 	ctx, cacnel := context.WithCancel(context.Background())
 	defer cacnel()
 
-	psqlConn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+	psqlConn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s",
 		config.ConfigData.Services.LomsDB.User,
 		config.ConfigData.Services.LomsDB.Password,
 		config.ConfigData.Services.LomsDB.Host,

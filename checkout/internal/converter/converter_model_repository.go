@@ -6,10 +6,6 @@ import (
 )
 
 func FromRepositoryToMolelListCartResponse(cartItems []*schema.CartItem) *model.ListCartResponse {
-	if cartItems == nil {
-		return nil
-	}
-
 	items := make([]*model.CartItem, 0, len(cartItems))
 	for _, i := range cartItems {
 		items = append(items, FromRepositoryToMolelCartItem(i))
