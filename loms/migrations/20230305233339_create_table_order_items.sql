@@ -3,7 +3,7 @@
 CREATE TABLE IF NOT EXISTS order_items (
     orders_id int8,
     sku int8,
-    count int4,
+    count int4 NOT NULL,
     PRIMARY KEY (orders_id, sku)
 );
 -- +goose StatementEnd

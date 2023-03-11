@@ -10,6 +10,7 @@ import (
 
 var (
 	ErrNotEnoughItems = errors.New("not enough items")
+	ErrNullCount      = errors.New("null count is not allowed")
 )
 
 type TransactionManager interface {

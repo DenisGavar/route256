@@ -3,13 +3,15 @@ package domain
 import (
 	"context"
 	"route256/loms/internal/domain/model"
+
+	"github.com/pkg/errors"
 )
 
 func (s *service) CreateOrder(ctx context.Context, req *model.CreateOrderRequest) (*model.CreateOrderResponse, error) {
 	// создаём заказ, получаем его id
 	response, err := s.repository.lomsRepository.CreateOrder(ctx, req)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithMessage(err, "creating order")
 	}
 
 	// дополняем структуру orderID
@@ -21,7 +23,7 @@ func (s *service) CreateOrder(ctx context.Context, req *model.CreateOrderRequest
 			// проверяем наличие каждого товара на складах
 			stocks, err := s.repository.lomsRepository.Stocks(ctxTX, &model.StocksRequest{Sku: orderItem.Sku})
 			if err != nil {
-				return err
+				return errors.WithMessage(err, "checking stocks")
 			}
 
 			var reservedCount uint64
@@ -59,7 +61,7 @@ func (s *service) CreateOrder(ctx context.Context, req *model.CreateOrderRequest
 			// резервируем товары
 			for warehouseId, reserveStockItem := range needToReserve {
 				if err := s.repository.lomsRepository.ReserveItems(ctxTX, response.OrderId, warehouseId, &reserveStockItem); err != nil {
-					return err
+					return errors.WithMessage(err, "reserving items")
 				}
 			}
 		}
@@ -69,22 +71,18 @@ func (s *service) CreateOrder(ctx context.Context, req *model.CreateOrderRequest
 
 	// проверяем успешность резерва
 	if err != nil {
-		// тут немного странно, т.к. получили ошибку, но потом её можем проигнорировать
-		// пока так, т.к. потом мы это поменяем, насколько я понял
-		// будем создавать заказ и сразу возвращать его ID, а резервировать будем в отдельной горутине
-
 		// вызываем метод смены статуса
 		// failed
 		err = s.repository.lomsRepository.ChangeStatus(ctx, response.OrderId, model.OrderStatusFailed)
 		if err != nil {
-			return nil, err
+			return nil, errors.WithMessage(err, "changing ctatus")
 		}
 	} else {
 		// вызываем метод смены статуса
 		// awaiting payment
 		err = s.repository.lomsRepository.ChangeStatus(ctx, response.OrderId, model.OrderStatusAwaitingPayment)
 		if err != nil {
-			return nil, err
+			return nil, errors.WithMessage(err, "changing ctatus")
 		}
 	}
 

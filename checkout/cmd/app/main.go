@@ -87,12 +87,12 @@ func runGRPC() error {
 	ctx, cacnel := context.WithCancel(context.Background())
 	defer cacnel()
 
-	psqlConn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s",
-		config.ConfigData.Services.CheckoutDB.User,
-		config.ConfigData.Services.CheckoutDB.Password,
-		config.ConfigData.Services.CheckoutDB.Host,
-		config.ConfigData.Services.CheckoutDB.Port,
-		config.ConfigData.Services.CheckoutDB.DBName)
+	psqlConn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+		config.ConfigData.Services.CheckoutPgBouncer.UserDB,
+		config.ConfigData.Services.CheckoutPgBouncer.PasswordDB,
+		config.ConfigData.Services.CheckoutPgBouncer.Host,
+		config.ConfigData.Services.CheckoutPgBouncer.Port,
+		config.ConfigData.Services.CheckoutPgBouncer.NameDB)
 
 	// пул соединений
 	pool, err := pgxpool.Connect(ctx, psqlConn)

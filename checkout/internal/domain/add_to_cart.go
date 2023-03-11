@@ -9,6 +9,13 @@ import (
 )
 
 func (s *service) AddToCart(ctx context.Context, req *model.AddToCartRequest) error {
+	// добавляем товар в корзину
+
+	// нулевое количество добавлять нет смысла
+	if req.Count == 0 {
+		return ErrNullCount
+	}
+
 	// проверяем, что товара достаточно на складах
 	stocks, err := s.lomsClient.Stocks(ctx, &loms.StocksRequest{Sku: req.Sku})
 	if err != nil {
@@ -22,7 +29,7 @@ func (s *service) AddToCart(ctx context.Context, req *model.AddToCartRequest) er
 			// если товаров достаточно, что добавляем в корзину
 			err = s.repository.checkoutRepository.AddToCart(ctx, req)
 			if err != nil {
-				return err
+				return errors.WithMessage(err, "adding to cart")
 			}
 			return nil
 		}

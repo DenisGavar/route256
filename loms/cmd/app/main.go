@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -37,12 +36,12 @@ func main() {
 	ctx, cacnel := context.WithCancel(context.Background())
 	defer cacnel()
 
-	psqlConn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s",
-		config.ConfigData.Services.LomsDB.User,
-		config.ConfigData.Services.LomsDB.Password,
-		config.ConfigData.Services.LomsDB.Host,
-		config.ConfigData.Services.LomsDB.Port,
-		config.ConfigData.Services.LomsDB.DBName)
+	psqlConn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+		config.ConfigData.Services.LomsPgBouncer.UserDB,
+		config.ConfigData.Services.LomsPgBouncer.PasswordDB,
+		config.ConfigData.Services.LomsPgBouncer.Host,
+		config.ConfigData.Services.LomsPgBouncer.Port,
+		config.ConfigData.Services.LomsPgBouncer.NameDB)
 
 	// пул соединений
 	pool, err := pgxpool.Connect(ctx, psqlConn)

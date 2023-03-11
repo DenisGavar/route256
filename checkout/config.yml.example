@@ -7,9 +7,9 @@ services:
   checkout:
     httpPort: ""
     grpcPort: ""
-  checkoutDB:
-    hostDB: ""
-    portDB: ""
+  checkoutPgBouncer:
+    host: ""
+    port: ""
     userDB: ""
     passwordDB: ""
     nameDB: ""

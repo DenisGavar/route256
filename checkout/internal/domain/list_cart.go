@@ -12,7 +12,7 @@ func (s *service) ListCart(ctx context.Context, req *model.ListCartRequest) (*mo
 	// получаем список товаров в корзине
 	response, err := s.repository.checkoutRepository.ListCart(ctx, req)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithMessage(err, "getting list cart")
 	}
 
 	// для каждого товара получаем наименование и цену, считаем итого

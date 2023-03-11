@@ -9,6 +9,7 @@ import (
 )
 
 func (s *service) Purchase(ctx context.Context, req *model.PurchaseRequest) (*model.PurchaseResponse, error) {
+	// создаём заказ
 
 	var order *loms.CreateOrderResponse
 	var err error
@@ -21,7 +22,7 @@ func (s *service) Purchase(ctx context.Context, req *model.PurchaseRequest) (*mo
 		// получаем товары из корзины
 		listCart, err := s.repository.checkoutRepository.ListCart(ctxTX, &model.ListCartRequest{User: req.User})
 		if err != nil {
-			return err
+			return errors.WithMessage(err, "getting list cart")
 		}
 
 		// если корзина пустая, то выходим
@@ -44,7 +45,7 @@ func (s *service) Purchase(ctx context.Context, req *model.PurchaseRequest) (*mo
 		// создаём заказ
 		order, err = s.lomsClient.CreateOrder(ctxTX, createOrderRequest)
 		if err != nil {
-			return errors.WithMessage(err, "create order")
+			return errors.WithMessage(err, "creating order")
 		}
 
 		// если заказ создали, то чистим корзину
@@ -55,7 +56,7 @@ func (s *service) Purchase(ctx context.Context, req *model.PurchaseRequest) (*mo
 				Count: cartItem.Count,
 			})
 			if err != nil {
-				return err
+				return errors.WithMessage(err, "deleting from cart")
 			}
 		}
 
