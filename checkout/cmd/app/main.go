@@ -19,6 +19,7 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"golang.org/x/time/rate"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
@@ -83,6 +84,15 @@ func runGRPC() error {
 	defer productServiceConn.Close()
 	productServiceClient := productService.New(productServiceConn, config.ConfigData.Services.ProductService.Token)
 
+	rateLimit := config.ConfigData.Services.ProductService.RateLimit
+
+	productServiceSettings := domain.NewProductServiceSettings(
+		config.ConfigData.Services.ProductService.ListCartWorkersCount,
+		rate.NewLimiter(rate.Every(time.Second/time.Duration(rateLimit)), rateLimit),
+	)
+
+	productService := domain.NewProductService(productServiceClient, *productServiceSettings)
+
 	// подключаемся к БД
 	ctx, cacnel := context.WithCancel(context.Background())
 	defer cacnel()
@@ -113,7 +123,7 @@ func runGRPC() error {
 
 	domainRepository := domain.NewRepository(repo, queryEngineProvider)
 
-	businessLogic := domain.NewService(lomsClient, productServiceClient, domainRepository)
+	businessLogic := domain.NewService(lomsClient, productService, domainRepository)
 
 	desc.RegisterCheckoutV1Server(s, checkoutV1.NewCheckoutV1(businessLogic))
 

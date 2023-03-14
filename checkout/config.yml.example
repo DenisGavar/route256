@@ -4,6 +4,8 @@ services:
   productService:
     address: ""
     token: ""
+    listCartWorkersCount: 
+    rateLimit: 
   checkout:
     httpPort: ""
     grpcPort: ""

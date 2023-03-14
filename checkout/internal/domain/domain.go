@@ -47,21 +47,49 @@ type ProductServiceClient interface {
 	GetProduct(context.Context, *product.GetProductRequest) (*product.GetProductResponse, error)
 }
 
+type Limiter interface {
+	Wait(context.Context) error
+}
+
+type productServiceSettings struct {
+	listCartWorkersCount int
+	limiter              Limiter
+}
+
+func NewProductServiceSettings(listCartWorkersCount int, limiter Limiter) *productServiceSettings {
+	return &productServiceSettings{
+		listCartWorkersCount: listCartWorkersCount,
+		limiter:              limiter,
+	}
+}
+
+type productService struct {
+	productServiceClient   ProductServiceClient
+	productServiceSettings productServiceSettings
+}
+
+func NewProductService(productServiceClient ProductServiceClient, productServiceSettings productServiceSettings) productService {
+	return productService{
+		productServiceClient:   productServiceClient,
+		productServiceSettings: productServiceSettings,
+	}
+}
+
 type LomsClient interface {
 	Stocks(context.Context, *loms.StocksRequest) (*loms.StocksResponse, error)
 	CreateOrder(context.Context, *loms.CreateOrderRequest) (*loms.CreateOrderResponse, error)
 }
 
 type service struct {
-	lomsClient           LomsClient
-	productServiceClient ProductServiceClient
-	repository           repository
+	lomsClient     LomsClient
+	productService productService
+	repository     repository
 }
 
-func NewService(lomsClient LomsClient, productServiceClient ProductServiceClient, repository repository) *service {
+func NewService(lomsClient LomsClient, productService productService, repository repository) *service {
 	return &service{
-		lomsClient:           lomsClient,
-		productServiceClient: productServiceClient,
-		repository:           repository,
+		lomsClient:     lomsClient,
+		productService: productService,
+		repository:     repository,
 	}
 }

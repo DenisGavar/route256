@@ -23,8 +23,10 @@ type Loms struct {
 }
 
 type ProductService struct {
-	Address string `yaml:"address"`
-	Token   string `yaml:"token"`
+	Address              string `yaml:"address"`
+	Token                string `yaml:"token"`
+	ListCartWorkersCount int    `yaml:"listCartWorkersCount"`
+	RateLimit            int    `yaml:"rateLimit"`
 }
 
 type Checkout struct {
