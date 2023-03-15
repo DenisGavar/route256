@@ -69,12 +69,9 @@ func main() {
 
 	// запускаем фоном отмену заказов
 	cancelOrderDaemon := cancelorder.NewCancelOrderDaemon(businessLogic)
-	// TODO: убрать в конфиги
-	go func() {
-		cancelOrderDaemon.RunCancelDaemon(
-			config.ConfigData.Services.CancelOrderDaemon.WorkersCount,
-			time.Minute*time.Duration(config.ConfigData.Services.CancelOrderDaemon.CancelOrderTimeInMinutes))
-	}()
+	go cancelOrderDaemon.RunCancelDaemon(
+		config.ConfigData.Services.CancelOrderDaemon.WorkersCount,
+		time.Minute*time.Duration(config.ConfigData.Services.CancelOrderDaemon.CancelOrderTimeInMinutes))
 
 	log.Println("grpc server at", config.ConfigData.Services.Loms.Port)
 

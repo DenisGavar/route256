@@ -13,13 +13,13 @@ import (
 	"route256/checkout/internal/domain"
 	repository "route256/checkout/internal/repository/postgres"
 	desc "route256/checkout/pkg/checkout_v1"
+	"route256/libs/limiter"
 	"route256/libs/transactor"
 	"sync"
 	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"golang.org/x/time/rate"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
@@ -88,7 +88,7 @@ func runGRPC() error {
 
 	productServiceSettings := domain.NewProductServiceSettings(
 		config.ConfigData.Services.ProductService.ListCartWorkersCount,
-		rate.NewLimiter(rate.Every(time.Second/time.Duration(rateLimit)), rateLimit),
+		limiter.NewLimiter(time.Second, rateLimit),
 	)
 
 	productService := domain.NewProductService(productServiceClient, *productServiceSettings)
