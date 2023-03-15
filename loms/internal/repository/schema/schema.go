@@ -23,3 +23,7 @@ type ReserveItem struct {
 	Sku         uint32 `db:"sku"`
 	Count       uint64 `db:"count"`
 }
+
+type CancelOrderRequest struct {
+	OrderId int64 `db:"id"`
+}

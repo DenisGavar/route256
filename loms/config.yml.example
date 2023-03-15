@@ -1,6 +1,9 @@
 services:
   loms:
     port: ""
+  cancelOrderDaemon:
+    workersCount: 
+    cancelOrderTimeInMinutes:     
   lomsPgBouncer:
     host: ""
     port: ""
