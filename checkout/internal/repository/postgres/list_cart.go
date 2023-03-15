@@ -11,14 +11,15 @@ import (
 )
 
 func (r *repo) ListCart(ctx context.Context, listCartRequest *model.ListCartRequest) (*model.ListCartResponse, error) {
-	// добавляем товары в корзину
+	// получаем список товаров в корзине
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
 	query := pgBuilder.Select("sku", "count").
 		From(basketsTable).
-		Where("user_id = ?", listCartRequest.User)
+		Where("user_id = ?", listCartRequest.User).
+		OrderBy("sku")
 
 	rawQuery, args, err := query.ToSql()
 	if err != nil {
