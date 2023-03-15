@@ -1,6 +1,7 @@
 package schema
 
 type CartItem struct {
-	Sku   uint32 `db:"sku"`
-	Count uint32 `db:"count"`
+	BasketId int64  `db:"id"`
+	Sku      uint32 `db:"sku"`
+	Count    uint32 `db:"count"`
 }

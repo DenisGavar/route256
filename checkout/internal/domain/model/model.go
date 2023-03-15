@@ -29,6 +29,8 @@ type CartItem struct {
 	Name string
 	// цена товара
 	Price uint32
+	// ID записи в БД
+	CartId int64
 }
 
 type ListCartResponse struct {

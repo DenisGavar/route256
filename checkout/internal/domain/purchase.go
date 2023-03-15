@@ -50,7 +50,7 @@ func (s *service) Purchase(ctx context.Context, req *model.PurchaseRequest) (*mo
 
 		// если заказ создали, то чистим корзину
 		for _, cartItem := range listCart.Items {
-			err = s.repository.checkoutRepository.DeleteFromCart(ctxTX, false, &model.DeleteFromCartRequest{
+			err = s.repository.checkoutRepository.DeleteFromCart(ctxTX, &model.DeleteFromCartRequest{
 				User:  req.User,
 				Sku:   cartItem.Sku,
 				Count: cartItem.Count,

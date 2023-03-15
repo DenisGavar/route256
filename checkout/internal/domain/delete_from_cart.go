@@ -16,17 +16,8 @@ func (s *service) DeleteFromCart(ctx context.Context, req *model.DeleteFromCartR
 	}
 
 	err := s.repository.transactionManager.RunRepeatableRead(ctx, func(ctxTX context.Context) error {
-		// получаем количество товара в корзине
-		count, err := s.repository.checkoutRepository.GetCartItemCount(ctxTX, req.User, req.Sku)
-		if err != nil {
-			return errors.WithMessage(err, "getting cart item")
-		}
-
-		// проверяем, полностью надо всё удалить или только часть
-		part := (req.Count < count)
-
-		// непосредственно удаление товара в нужном количестве из корзины
-		err = s.repository.checkoutRepository.DeleteFromCart(ctxTX, part, req)
+		// удаление товара в нужном количестве из корзины
+		err := s.repository.checkoutRepository.DeleteFromCart(ctxTX, req)
 		if err != nil {
 			return errors.WithMessage(err, "deleting from cart")
 		}

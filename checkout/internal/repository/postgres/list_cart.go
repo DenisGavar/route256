@@ -16,10 +16,11 @@ func (r *repo) ListCart(ctx context.Context, listCartRequest *model.ListCartRequ
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
-	query := pgBuilder.Select("sku", "count").
+	query := pgBuilder.Select("sku", "sum(count) as count").
 		From(basketsTable).
 		Where("user_id = ?", listCartRequest.User).
-		OrderBy("sku")
+		OrderBy("sku").
+		GroupBy("sku")
 
 	rawQuery, args, err := query.ToSql()
 	if err != nil {
