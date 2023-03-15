@@ -28,7 +28,7 @@ func (s *service) CreateOrder(ctx context.Context, req *model.CreateOrderRequest
 
 			var reservedCount uint64
 			// собираем на каких складах сколько нужно взять товара
-			needToReserve := make(map[int64]model.ReserveStocksItem, 1)
+			needToReserve := make([]*model.ReserveStocksItem, 0, len(stocks.Stocks))
 
 			for _, stocksItem := range stocks.Stocks {
 
@@ -38,18 +38,18 @@ func (s *service) CreateOrder(ctx context.Context, req *model.CreateOrderRequest
 				}
 
 				if stocksItem.Count > left {
-					needToReserve[stocksItem.WarehouseId] = model.ReserveStocksItem{
-						Sku:   orderItem.Sku,
-						Count: left,
-						Part:  true,
-					}
+					needToReserve = append(needToReserve, &model.ReserveStocksItem{
+						WarehouseId: stocksItem.WarehouseId,
+						Sku:         orderItem.Sku,
+						Count:       left,
+					})
 					reservedCount += left
 				} else {
-					needToReserve[stocksItem.WarehouseId] = model.ReserveStocksItem{
-						Sku:   orderItem.Sku,
-						Count: stocksItem.Count,
-						Part:  false,
-					}
+					needToReserve = append(needToReserve, &model.ReserveStocksItem{
+						WarehouseId: stocksItem.WarehouseId,
+						Sku:         orderItem.Sku,
+						Count:       stocksItem.Count,
+					})
 					reservedCount += stocksItem.Count
 				}
 			}
@@ -59,8 +59,8 @@ func (s *service) CreateOrder(ctx context.Context, req *model.CreateOrderRequest
 			}
 
 			// резервируем товары
-			for warehouseId, reserveStockItem := range needToReserve {
-				if err := s.repository.lomsRepository.ReserveItems(ctxTX, response.OrderId, warehouseId, &reserveStockItem); err != nil {
+			for _, reserveStockItem := range needToReserve {
+				if err := s.repository.lomsRepository.ReserveItems(ctxTX, response.OrderId, reserveStockItem); err != nil {
 					return errors.WithMessage(err, "reserving items")
 				}
 			}

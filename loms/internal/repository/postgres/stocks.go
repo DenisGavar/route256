@@ -15,9 +15,10 @@ func (r *repo) Stocks(ctx context.Context, stocksRequest *model.StocksRequest) (
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
-	query := pgBuilder.Select("warehouse_id", "count").
+	query := pgBuilder.Select("warehouse_id", "sum(count) count").
 		From(itemsStocksTable).
-		Where("sku = ?", stocksRequest.Sku)
+		Where("sku = ?", stocksRequest.Sku).
+		GroupBy("warehouse_id")
 
 	rawQuery, args, err := query.ToSql()
 	if err != nil {

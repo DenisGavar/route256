@@ -1,6 +1,7 @@
 package schema
 
 type StockItem struct {
+	StockId     int64  `db:"id"`
 	Sku         int64  `db:"sku"`
 	WarehouseId int64  `db:"warehouse_id"`
 	Count       uint64 `db:"count"`

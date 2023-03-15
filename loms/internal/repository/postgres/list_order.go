@@ -31,9 +31,10 @@ func (r *repo) ListOrder(ctx context.Context, req *model.ListOrderRequest) (*mod
 	}
 
 	// получаем сроки заказа
-	query = pgBuilder.Select("sku", "count").
+	query = pgBuilder.Select("sku", "sum(count) as count").
 		From(orderItemsTable).
-		Where("orders_id = ?", req.OrderId)
+		Where("orders_id = ?", req.OrderId).
+		GroupBy("sku")
 
 	rawQuery, args, err = query.ToSql()
 	if err != nil {

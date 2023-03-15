@@ -16,9 +16,10 @@ func (r *repo) Reserves(ctx context.Context, orderId int64) (*model.Reserve, err
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
-	query := pgBuilder.Select("sku", "warehouse_id", "count").
+	query := pgBuilder.Select("sku", "warehouse_id", "sum(count) as count").
 		From(itemsStocksReservationTable).
-		Where("orders_id = ?", orderId)
+		Where("orders_id = ?", orderId).
+		GroupBy("sku", "warehouse_id")
 
 	rawQuery, args, err := query.ToSql()
 	if err != nil {

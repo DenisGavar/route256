@@ -60,7 +60,6 @@ type ReserveStocksItem struct {
 	WarehouseId int64
 	Sku         uint32
 	Count       uint64
-	Part        bool
 }
 
 type Reserve struct {

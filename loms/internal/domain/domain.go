@@ -21,7 +21,7 @@ type LomsRepository interface {
 	Reserves(ctx context.Context, orderId int64) (*model.Reserve, error)
 	ReturnReserve(ctx context.Context, reserveStocksItem *model.ReserveStocksItem) error
 	Stocks(ctx context.Context, stocksRequest *model.StocksRequest) (*model.StocksResponse, error)
-	ReserveItems(ctx context.Context, orderId int64, warehouseId int64, req *model.ReserveStocksItem) error
+	ReserveItems(ctx context.Context, orderId int64, req *model.ReserveStocksItem) error
 	ChangeStatus(ctx context.Context, orderId int64, status string) error
 }
 

@@ -1,10 +1,10 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS items_stocks (
+    id serial PRIMARY KEY, 
     sku int8,
     warehouse_id int8,
-    count int8 NOT NULL,
-    PRIMARY KEY (sku, warehouse_id)
+    count int8 NOT NULL
 );
 -- +goose StatementEnd
 
