@@ -11,11 +11,6 @@ import (
 func (s *service) AddToCart(ctx context.Context, req *model.AddToCartRequest) error {
 	// добавляем товар в корзину
 
-	// нулевое количество добавлять нет смысла
-	if req.Count == 0 {
-		return ErrNullCount
-	}
-
 	// проверяем, что товара достаточно на складах
 	stocks, err := s.lomsClient.Stocks(ctx, &loms.StocksRequest{Sku: req.Sku})
 	if err != nil {
