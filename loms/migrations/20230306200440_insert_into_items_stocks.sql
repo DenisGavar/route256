@@ -14,5 +14,12 @@ VALUES
 
 -- +goose Down
 -- +goose StatementBegin
-SELECT 'down SQL query';
+DELETE FROM items_stocks WHERE sku = 4487693 AND warehouse_id = 4 AND count = 100;
+DELETE FROM items_stocks WHERE sku = 4669069 AND warehouse_id = 4 AND count = 100;
+DELETE FROM items_stocks WHERE sku = 4678287 AND warehouse_id = 4 AND count = 100;
+DELETE FROM items_stocks WHERE sku = 4678816 AND warehouse_id = 4 AND count = 100;
+DELETE FROM items_stocks WHERE sku = 4679011 AND warehouse_id = 4 AND count = 100;
+DELETE FROM items_stocks WHERE sku = 4687693 AND warehouse_id = 4 AND count = 100;
+DELETE FROM items_stocks WHERE sku = 4996014 AND warehouse_id = 4 AND count = 100;
+DELETE FROM items_stocks WHERE sku = 5097510 AND warehouse_id = 4 AND count = 100;
 -- +goose StatementEnd
