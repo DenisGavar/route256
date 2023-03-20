@@ -46,8 +46,8 @@ type productService struct {
 	productServiceSettings productServiceSettings
 }
 
-func NewProductService(productServiceClient productServiceGRPCClient.ProductServiceClient, productServiceSettings productServiceSettings) productService {
-	return productService{
+func NewProductService(productServiceClient productServiceGRPCClient.ProductServiceClient, productServiceSettings productServiceSettings) *productService {
+	return &productService{
 		productServiceClient:   productServiceClient,
 		productServiceSettings: productServiceSettings,
 	}
@@ -62,14 +62,31 @@ type Service interface {
 
 type service struct {
 	lomsClient     loms.LomsClient
-	productService productService
+	productService *productService
 	repository     *repo
 }
 
-func NewService(lomsClient loms.LomsClient, productService productService, repo *repo) *service {
+func NewService(lomsClient loms.LomsClient, productService *productService, repo *repo) *service {
 	return &service{
 		lomsClient:     lomsClient,
 		productService: productService,
 		repository:     repo,
 	}
+}
+
+func NewMockService(deps ...interface{}) *service {
+	ns := service{}
+
+	for _, v := range deps {
+		switch s := v.(type) {
+		case loms.LomsClient:
+			ns.lomsClient = s
+		case *productService:
+			ns.productService = s
+		case *repo:
+			ns.repository = s
+		}
+	}
+
+	return &ns
 }

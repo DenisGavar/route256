@@ -10,6 +10,7 @@ const (
 	basketsTable = "baskets"
 )
 
+//go:generate mockgen -source="repository.go" -destination=mocks/repository_mock.go -package=mocks . CheckoutRepository
 type CheckoutRepository interface {
 	AddToCart(ctx context.Context, addToCartRequest *model.AddToCartRequest) error
 	ListCart(ctx context.Context, listCartRequest *model.ListCartRequest) (*model.ListCartResponse, error)
