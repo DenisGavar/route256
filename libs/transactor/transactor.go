@@ -18,6 +18,10 @@ type QueryEngineProvider interface {
 	GetQueryEngine(ctx context.Context) QueryEngine // tx/pool
 }
 
+type TransactionManager interface {
+	RunRepeatableRead(ctx context.Context, f func(ctxTX context.Context) error) error
+}
+
 type transactionManager struct {
 	pool *pgxpool.Pool
 }

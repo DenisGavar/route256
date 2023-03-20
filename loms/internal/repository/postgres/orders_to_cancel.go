@@ -11,7 +11,7 @@ import (
 	"github.com/georgysavva/scany/pgxscan"
 )
 
-func (r *repo) OrdersToCancel(ctx context.Context, time time.Time) ([]*model.CancelOrderRequest, error) {
+func (r *repository) OrdersToCancel(ctx context.Context, time time.Time) ([]*model.CancelOrderRequest, error) {
 	//получаем заказы на отмену
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 

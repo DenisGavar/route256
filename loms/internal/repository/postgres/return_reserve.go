@@ -7,7 +7,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 )
 
-func (r *repo) ReturnReserve(ctx context.Context, reserveStocksItem *model.ReserveStocksItem) error {
+func (r *repository) ReturnReserve(ctx context.Context, reserveStocksItem *model.ReserveStocksItem) error {
 	// возвращаем резервы на склад
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 

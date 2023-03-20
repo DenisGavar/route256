@@ -10,7 +10,7 @@ import (
 	"github.com/georgysavva/scany/pgxscan"
 )
 
-func (r *repo) Stocks(ctx context.Context, stocksRequest *model.StocksRequest) (*model.StocksResponse, error) {
+func (r *repository) Stocks(ctx context.Context, stocksRequest *model.StocksRequest) (*model.StocksResponse, error) {
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)

@@ -10,7 +10,7 @@ import (
 	"github.com/georgysavva/scany/pgxscan"
 )
 
-func (r *repo) Reserves(ctx context.Context, orderId int64) (*model.Reserve, error) {
+func (r *repository) Reserves(ctx context.Context, orderId int64) (*model.Reserve, error) {
 	// получаем резервы
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 

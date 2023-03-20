@@ -7,7 +7,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 )
 
-func (r *repo) AddToCart(ctx context.Context, addToCartRequest *model.AddToCartRequest) error {
+func (r *repository) AddToCart(ctx context.Context, addToCartRequest *model.AddToCartRequest) error {
 	// добавляем товары в корзину
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 

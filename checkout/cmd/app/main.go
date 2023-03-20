@@ -119,7 +119,7 @@ func runGRPC() error {
 	configDB.MaxConns = 10
 
 	queryEngineProvider := transactor.NewTransactionManager(pool)
-	repo := repository.NewRepo(queryEngineProvider)
+	repo := repository.NewRepository(queryEngineProvider)
 
 	domainRepository := domain.NewRepository(repo, queryEngineProvider)
 
