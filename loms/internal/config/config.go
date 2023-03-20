@@ -12,11 +12,20 @@ type ConfigStruct struct {
 }
 
 type Services struct {
-	Loms Loms `yaml:"loms"`
+	Loms          Loms          `yaml:"loms"`
+	LomsPgBouncer LomsPgBouncer `yaml:"lomsPgBouncer"`
 }
 
 type Loms struct {
 	Port string `yaml:"port"`
+}
+
+type LomsPgBouncer struct {
+	Host       string `yaml:"host"`
+	Port       string `yaml:"port"`
+	UserDB     string `yaml:"userDB"`
+	PasswordDB string `yaml:"passwordDB"`
+	NameDB     string `yaml:"nameDB"`
 }
 
 var ConfigData ConfigStruct

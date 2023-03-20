@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -10,10 +11,14 @@ import (
 	productService "route256/checkout/internal/clients/grpc/product-service"
 	"route256/checkout/internal/config"
 	"route256/checkout/internal/domain"
+	repository "route256/checkout/internal/repository/postgres"
 	desc "route256/checkout/pkg/checkout_v1"
+	"route256/libs/transactor"
 	"sync"
+	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
@@ -78,7 +83,37 @@ func runGRPC() error {
 	defer productServiceConn.Close()
 	productServiceClient := productService.New(productServiceConn, config.ConfigData.Services.ProductService.Token)
 
-	businessLogic := domain.NewModel(lomsClient, productServiceClient)
+	// подключаемся к БД
+	ctx, cacnel := context.WithCancel(context.Background())
+	defer cacnel()
+
+	psqlConn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+		config.ConfigData.Services.CheckoutPgBouncer.UserDB,
+		config.ConfigData.Services.CheckoutPgBouncer.PasswordDB,
+		config.ConfigData.Services.CheckoutPgBouncer.Host,
+		config.ConfigData.Services.CheckoutPgBouncer.Port,
+		config.ConfigData.Services.CheckoutPgBouncer.NameDB)
+
+	// пул соединений
+	pool, err := pgxpool.Connect(ctx, psqlConn)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer pool.Close()
+
+	// настройки
+	configDB := pool.Config()
+	configDB.MaxConnIdleTime = time.Minute
+	configDB.MaxConnLifetime = time.Hour
+	configDB.MinConns = 2
+	configDB.MaxConns = 10
+
+	queryEngineProvider := transactor.NewTransactionManager(pool)
+	repo := repository.NewRepo(queryEngineProvider)
+
+	domainRepository := domain.NewRepository(repo, queryEngineProvider)
+
+	businessLogic := domain.NewService(lomsClient, productServiceClient, domainRepository)
 
 	desc.RegisterCheckoutV1Server(s, checkoutV1.NewCheckoutV1(businessLogic))
 

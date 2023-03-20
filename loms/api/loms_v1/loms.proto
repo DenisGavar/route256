@@ -45,18 +45,9 @@ message ListOrderRequest {
     int64 order_id = 1;
 }
 
-// статус заказа (new | awaiting payment | failed | payed | cancelled)
-enum OderStatus {
-    new = 0;
-    awaiting_payment = 1;
-    failed = 2;
-    payed = 3;
-    cancelled = 4;
-}
-
 message ListOrderResponse {
     // статус заказа (new | awaiting payment | failed | payed | cancelled)
-    OderStatus status = 1;
+    string status = 1;
     // user ID
     int64 user = 2;
     // слайс товаров заказа

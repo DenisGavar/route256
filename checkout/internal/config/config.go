@@ -12,9 +12,10 @@ type ConfigStruct struct {
 }
 
 type Services struct {
-	Loms           Loms           `yaml:"loms"`
-	ProductService ProductService `yaml:"productService"`
-	Checkout       Checkout       `yaml:"checkout"`
+	Loms              Loms              `yaml:"loms"`
+	ProductService    ProductService    `yaml:"productService"`
+	Checkout          Checkout          `yaml:"checkout"`
+	CheckoutPgBouncer CheckoutPgBouncer `yaml:"checkoutPgBouncer"`
 }
 
 type Loms struct {
@@ -29,6 +30,14 @@ type ProductService struct {
 type Checkout struct {
 	HTTPPort string `yaml:"httpPort"`
 	GRPCPort string `yaml:"grpcPort"`
+}
+
+type CheckoutPgBouncer struct {
+	Host       string `yaml:"host"`
+	Port       string `yaml:"port"`
+	UserDB     string `yaml:"userDB"`
+	PasswordDB string `yaml:"passwordDB"`
+	NameDB     string `yaml:"nameDB"`
 }
 
 var ConfigData ConfigStruct

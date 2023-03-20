@@ -2,36 +2,33 @@ package domain
 
 import (
 	"context"
+	"route256/checkout/internal/domain/model"
 	loms "route256/loms/pkg/loms_v1"
 
 	"github.com/pkg/errors"
 )
 
-type AddToCartRequest struct {
-	// user ID
-	User int64
-	// stock keeping unit - единица складского учёта
-	Sku   uint32
-	Count uint32
-}
+func (s *service) AddToCart(ctx context.Context, req *model.AddToCartRequest) error {
+	// добавляем товар в корзину
 
-var (
-	ErrInsufficientStocks = errors.New("insufficient stocks")
-)
-
-func (m *model) AddToCart(ctx context.Context, req *AddToCartRequest) error {
-	stocks, err := m.lomsClient.Stocks(ctx, &loms.StocksRequest{Sku: req.Sku})
+	// проверяем, что товара достаточно на складах
+	stocks, err := s.lomsClient.Stocks(ctx, &loms.StocksRequest{Sku: req.Sku})
 	if err != nil {
 		return errors.WithMessage(err, "checking stocks")
 	}
 
 	counter := int64(req.Count)
-	for _, stock := range stocks.GetStocks() {
-		counter -= int64(stock.Count)
+	for _, stocksItem := range stocks.GetStocks() {
+		counter -= int64(stocksItem.Count)
 		if counter <= 0 {
+			// если товаров достаточно, что добавляем в корзину
+			err = s.repository.checkoutRepository.AddToCart(ctx, req)
+			if err != nil {
+				return errors.WithMessage(err, "adding to cart")
+			}
 			return nil
 		}
 	}
 
-	return ErrInsufficientStocks
+	return ErrNotEnoughItems
 }

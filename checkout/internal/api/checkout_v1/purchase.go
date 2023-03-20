@@ -10,10 +10,10 @@ import (
 func (i *Implementation) Purchase(ctx context.Context, req *desc.PurchaseRequest) (*desc.PurchaseResponse, error) {
 	log.Printf("purchase: %+v", req)
 
-	response, err := i.checkoutModel.Purchase(ctx, converter.ToPurchaseRequestModel(req))
+	response, err := i.checkoutModel.Purchase(ctx, converter.FromDescToMolelPurchaseRequest(req))
 	if err != nil {
 		return nil, err
 	}
 
-	return converter.ToPurchaseResponseDesc(response), nil
+	return converter.FromMolelToDescPurchaseResponse(response), nil
 }

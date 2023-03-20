@@ -1,3 +1,9 @@
 services:
   loms:
     port: ""
+  lomsPgBouncer:
+    host: ""
+    port: ""
+    userDB: ""
+    passwordDB: ""
+    nameDB: ""
