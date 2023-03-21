@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+//go:generate mockgen -source="client.go" -destination="mocks/client_mock.go" -package=mocks . ProductServiceClient
 type ProductServiceClient interface {
 	GetProduct(context.Context, *product.GetProductRequest) (*product.GetProductResponse, error)
 }

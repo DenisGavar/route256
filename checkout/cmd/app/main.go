@@ -91,7 +91,7 @@ func runGRPC() error {
 		limiter.NewLimiter(time.Second, rateLimit),
 	)
 
-	productService := domain.NewProductService(productServiceClient, *productServiceSettings)
+	productService := domain.NewProductService(productServiceClient, productServiceSettings)
 
 	// подключаемся к БД
 	ctx, cacnel := context.WithCancel(context.Background())

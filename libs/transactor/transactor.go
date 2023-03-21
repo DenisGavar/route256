@@ -18,6 +18,7 @@ type QueryEngineProvider interface {
 	GetQueryEngine(ctx context.Context) QueryEngine // tx/pool
 }
 
+//go:generate mockgen -source="transactor.go" -destination="mocks/transactor_mock.go" -package=mocks . TransactionManager
 type TransactionManager interface {
 	RunRepeatableRead(ctx context.Context, f func(ctxTX context.Context) error) error
 }

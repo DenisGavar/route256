@@ -12,7 +12,8 @@ import (
 )
 
 var (
-	ErrNotEnoughItems = errors.New("not enough items")
+	ErrNotEnoughItems  = errors.New("not enough items")
+	ErrGettingListCart = errors.New("getting list cart")
 )
 
 type repo struct {
@@ -43,10 +44,10 @@ func NewProductServiceSettings(listCartWorkersCount int, limiter limiter.Limiter
 
 type productService struct {
 	productServiceClient   productServiceGRPCClient.ProductServiceClient
-	productServiceSettings productServiceSettings
+	productServiceSettings *productServiceSettings
 }
 
-func NewProductService(productServiceClient productServiceGRPCClient.ProductServiceClient, productServiceSettings productServiceSettings) *productService {
+func NewProductService(productServiceClient productServiceGRPCClient.ProductServiceClient, productServiceSettings *productServiceSettings) *productService {
 	return &productService{
 		productServiceClient:   productServiceClient,
 		productServiceSettings: productServiceSettings,
