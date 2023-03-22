@@ -12,7 +12,7 @@ func (s *service) ListOrder(ctx context.Context, req *model.ListOrderRequest) (*
 
 	response, err := s.repository.lomsRepository.ListOrder(ctx, req)
 	if err != nil {
-		return nil, errors.WithMessage(err, "getting list order")
+		return nil, errors.WithMessage(err, ErrGettingListOrder.Error())
 	}
 
 	return response, nil

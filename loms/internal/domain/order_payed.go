@@ -13,14 +13,14 @@ func (s *service) OrderPayed(ctx context.Context, req *model.OrderPayedRequest) 
 	// очищаем резервы
 	err := s.repository.lomsRepository.ClearReserves(ctx, req.OrderId)
 	if err != nil {
-		return errors.WithMessage(err, "clearing reserves")
+		return errors.WithMessage(err, ErrClearingReserves.Error())
 	}
 
 	// вызываем метод смены статуса
 	// payed
 	err = s.repository.lomsRepository.ChangeStatus(ctx, req.OrderId, model.OrderStatusPayed)
 	if err != nil {
-		return errors.WithMessage(err, "changing ctatus")
+		return errors.WithMessage(err, ErrChangingStatus.Error())
 	}
 
 	return nil

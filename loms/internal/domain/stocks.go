@@ -11,7 +11,7 @@ func (s *service) Stocks(ctx context.Context, req *model.StocksRequest) (*model.
 	// получаем остатки на складах
 	response, err := s.repository.lomsRepository.Stocks(ctx, req)
 	if err != nil {
-		return nil, errors.WithMessage(err, "getting stocks")
+		return nil, errors.WithMessage(err, ErrGettingStocks.Error())
 	}
 
 	return response, nil

@@ -9,7 +9,16 @@ import (
 )
 
 var (
-	ErrNotEnoughItems = errors.New("not enough items")
+	ErrNotEnoughItems        = errors.New("not enough items")
+	ErrCheckingReserves      = errors.New("checking reserves")
+	ErrReturningReserves     = errors.New("returning reserves")
+	ErrClearingReserves      = errors.New("clearing reserves")
+	ErrChangingStatus        = errors.New("changing status")
+	ErrCreatingOrder         = errors.New("creating order")
+	ErrGettingStocks         = errors.New("getting stocks")
+	ErrReservingItems        = errors.New("reserving items")
+	ErrGettingListOrder      = errors.New("getting list order")
+	ErrGettingOrdersToCancel = errors.New("getting orders to cancel")
 )
 
 type repo struct {

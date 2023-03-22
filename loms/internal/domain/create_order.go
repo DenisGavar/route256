@@ -11,7 +11,7 @@ func (s *service) CreateOrder(ctx context.Context, req *model.CreateOrderRequest
 	// создаём заказ, получаем его id
 	response, err := s.repository.lomsRepository.CreateOrder(ctx, req)
 	if err != nil {
-		return nil, errors.WithMessage(err, "creating order")
+		return nil, errors.WithMessage(err, ErrCreatingOrder.Error())
 	}
 
 	// дополняем структуру orderID
@@ -23,7 +23,7 @@ func (s *service) CreateOrder(ctx context.Context, req *model.CreateOrderRequest
 			// проверяем наличие каждого товара на складах
 			stocks, err := s.repository.lomsRepository.Stocks(ctxTX, &model.StocksRequest{Sku: orderItem.Sku})
 			if err != nil {
-				return errors.WithMessage(err, "checking stocks")
+				return errors.WithMessage(err, ErrGettingStocks.Error())
 			}
 
 			var reservedCount uint64
@@ -61,7 +61,7 @@ func (s *service) CreateOrder(ctx context.Context, req *model.CreateOrderRequest
 			// резервируем товары
 			for _, reserveStockItem := range needToReserve {
 				if err := s.repository.lomsRepository.ReserveItems(ctxTX, response.OrderId, reserveStockItem); err != nil {
-					return errors.WithMessage(err, "reserving items")
+					return errors.WithMessage(err, ErrReservingItems.Error())
 				}
 			}
 		}
@@ -75,14 +75,14 @@ func (s *service) CreateOrder(ctx context.Context, req *model.CreateOrderRequest
 		// failed
 		err = s.repository.lomsRepository.ChangeStatus(ctx, response.OrderId, model.OrderStatusFailed)
 		if err != nil {
-			return nil, errors.WithMessage(err, "changing ctatus")
+			return nil, errors.WithMessage(err, ErrChangingStatus.Error())
 		}
 	} else {
 		// вызываем метод смены статуса
 		// awaiting payment
 		err = s.repository.lomsRepository.ChangeStatus(ctx, response.OrderId, model.OrderStatusAwaitingPayment)
 		if err != nil {
-			return nil, errors.WithMessage(err, "changing ctatus")
+			return nil, errors.WithMessage(err, ErrChangingStatus.Error())
 		}
 	}
 
