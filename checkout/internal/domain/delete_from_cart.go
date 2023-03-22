@@ -13,7 +13,7 @@ func (s *service) DeleteFromCart(ctx context.Context, req *model.DeleteFromCartR
 		// удаление товара в нужном количестве из корзины
 		err := s.repository.checkoutRepository.DeleteFromCart(ctxTX, req)
 		if err != nil {
-			return errors.WithMessage(err, "deleting from cart")
+			return errors.WithMessage(err, ErrDeletingFromCart.Error())
 		}
 
 		return nil

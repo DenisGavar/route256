@@ -23,7 +23,6 @@ import (
 
 func TestListCart(t *testing.T) {
 	type checkoutRepositoryMockFunc func(mc *gomock.Controller) repository.CheckoutRepository
-	type transactionManagerMockFunc func(mc *gomock.Controller) transactor.TransactionManager
 	type limiterMockFunc func(mc *gomock.Controller) limiter.Limiter
 	type productServiceClientMockFunc func(mc *gomock.Controller) productServiceGRPCClient.ProductServiceClient
 
@@ -33,8 +32,9 @@ func TestListCart(t *testing.T) {
 	}
 
 	var (
-		mc  = gomock.NewController(t)
-		ctx = context.Background()
+		mc     = gomock.NewController(t)
+		ctx    = context.Background()
+		dbMock = transactorMock.NewMockDB(mc)
 
 		listCartWorkersCount = gofakeit.IntRange(5, 10)
 
@@ -48,11 +48,11 @@ func TestListCart(t *testing.T) {
 			User: userID,
 		}
 
-		reqProductService = &product.GetProductRequest{
+		reqGetProduct = &product.GetProductRequest{
 			Sku: itemSku,
 		}
 
-		resRepository = &model.ListCartResponse{
+		resListCart = &model.ListCartResponse{
 			Items: []*model.CartItem{
 				{
 					Sku:   itemSku,
@@ -61,7 +61,7 @@ func TestListCart(t *testing.T) {
 			},
 		}
 
-		resProductService = &product.GetProductResponse{
+		resGetProduct = &product.GetProductResponse{
 			Name:  itemName,
 			Price: itemPrice,
 		}
@@ -78,7 +78,8 @@ func TestListCart(t *testing.T) {
 			TotalPrice: itemPrice * itemCount,
 		}
 
-		repositoryErr = errors.New("repository error")
+		repositoryErr     = errors.New("repository error")
+		productServiceErr = errors.New("product service error")
 	)
 
 	tests := []struct {
@@ -87,7 +88,6 @@ func TestListCart(t *testing.T) {
 		want                     *model.ListCartResponse
 		err                      error
 		checkoutRepositoryMock   checkoutRepositoryMockFunc
-		transactionManagerMock   transactionManagerMockFunc
 		limiterMock              limiterMockFunc
 		productServiceClientMock productServiceClientMockFunc
 	}{
@@ -101,11 +101,7 @@ func TestListCart(t *testing.T) {
 			err:  nil,
 			checkoutRepositoryMock: func(mc *gomock.Controller) repository.CheckoutRepository {
 				mock := repositoryMock.NewMockCheckoutRepository(mc)
-				mock.EXPECT().ListCart(ctx, req).Return(resRepository, nil)
-				return mock
-			},
-			transactionManagerMock: func(mc *gomock.Controller) transactor.TransactionManager {
-				mock := transactorMock.NewMockTransactionManager(mc)
+				mock.EXPECT().ListCart(ctx, req).Return(resListCart, nil)
 				return mock
 			},
 			limiterMock: func(mc *gomock.Controller) limiter.Limiter {
@@ -115,12 +111,12 @@ func TestListCart(t *testing.T) {
 			},
 			productServiceClientMock: func(mc *gomock.Controller) productServiceGRPCClient.ProductServiceClient {
 				mock := productServiceGRPCClientMock.NewMockProductServiceClient(mc)
-				mock.EXPECT().GetProduct(ctx, reqProductService).Return(resProductService, nil)
+				mock.EXPECT().GetProduct(ctx, reqGetProduct).Return(resGetProduct, nil)
 				return mock
 			},
 		},
 		{
-			name: "checkoutRepository.ListCart fail",
+			name: "getting list cart fail",
 			args: args{
 				ctx: ctx,
 				req: req,
@@ -132,16 +128,36 @@ func TestListCart(t *testing.T) {
 				mock.EXPECT().ListCart(ctx, req).Return(nil, repositoryErr)
 				return mock
 			},
-			transactionManagerMock: func(mc *gomock.Controller) transactor.TransactionManager {
-				mock := transactorMock.NewMockTransactionManager(mc)
-				return mock
-			},
 			limiterMock: func(mc *gomock.Controller) limiter.Limiter {
 				mock := limiterMock.NewMockLimiter(mc)
 				return mock
 			},
 			productServiceClientMock: func(mc *gomock.Controller) productServiceGRPCClient.ProductServiceClient {
 				mock := productServiceGRPCClientMock.NewMockProductServiceClient(mc)
+				return mock
+			},
+		},
+		{
+			name: "getting product fail",
+			args: args{
+				ctx: ctx,
+				req: req,
+			},
+			want: nil,
+			err:  ErrGettingProduct,
+			checkoutRepositoryMock: func(mc *gomock.Controller) repository.CheckoutRepository {
+				mock := repositoryMock.NewMockCheckoutRepository(mc)
+				mock.EXPECT().ListCart(ctx, req).Return(resListCart, nil)
+				return mock
+			},
+			limiterMock: func(mc *gomock.Controller) limiter.Limiter {
+				mock := limiterMock.NewMockLimiter(mc)
+				mock.EXPECT().Wait(ctx).Return(nil)
+				return mock
+			},
+			productServiceClientMock: func(mc *gomock.Controller) productServiceGRPCClient.ProductServiceClient {
+				mock := productServiceGRPCClientMock.NewMockProductServiceClient(mc)
+				mock.EXPECT().GetProduct(ctx, reqGetProduct).Return(nil, productServiceErr)
 				return mock
 			},
 		},
@@ -152,7 +168,7 @@ func TestListCart(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			repo := NewRepository(tt.checkoutRepositoryMock(mc), tt.transactionManagerMock(mc))
+			repo := NewRepository(tt.checkoutRepositoryMock(mc), transactor.NewTransactionManager(dbMock))
 
 			productServiceSettings := NewProductServiceSettings(listCartWorkersCount, tt.limiterMock(mc))
 			productService := NewProductService(tt.productServiceClientMock(mc), productServiceSettings)

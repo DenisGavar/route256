@@ -5,7 +5,8 @@ import (
 
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
-	"github.com/jackc/pgx/v4/pgxpool"
+
+	//"github.com/jackc/pgx/v4/pgxpool"
 	"go.uber.org/multierr"
 )
 
@@ -18,24 +19,33 @@ type QueryEngineProvider interface {
 	GetQueryEngine(ctx context.Context) QueryEngine // tx/pool
 }
 
-//go:generate mockgen -source="transactor.go" -destination="mocks/transactor_mock.go" -package=mocks . TransactionManager
 type TransactionManager interface {
 	RunRepeatableRead(ctx context.Context, f func(ctxTX context.Context) error) error
 }
 
-type transactionManager struct {
-	pool *pgxpool.Pool
+type Transactor interface {
+	BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, error)
 }
 
-func NewTransactionManager(pool *pgxpool.Pool) *transactionManager {
+//go:generate mockgen -source="transactor.go" -destination="mocks/db_mock.go" -package=mocks . DB
+type DB interface {
+	QueryEngine
+	Transactor
+}
+
+type transactionManager struct {
+	pool DB
+}
+
+func NewTransactionManager(pool DB) *transactionManager {
 	return &transactionManager{
 		pool: pool,
 	}
 }
 
-type txkey string
+type key string
 
-const key = txkey("tx")
+const TxKey = key("tx")
 
 func (tm *transactionManager) RunRepeatableRead(ctx context.Context, fx func(ctxTX context.Context) error) error {
 	tx, err := tm.pool.BeginTx(ctx,
@@ -46,7 +56,7 @@ func (tm *transactionManager) RunRepeatableRead(ctx context.Context, fx func(ctx
 		return err
 	}
 
-	if err := fx(context.WithValue(ctx, key, tx)); err != nil {
+	if err := fx(context.WithValue(ctx, TxKey, tx)); err != nil {
 		return multierr.Combine(err, tx.Rollback(ctx))
 	}
 
@@ -58,10 +68,14 @@ func (tm *transactionManager) RunRepeatableRead(ctx context.Context, fx func(ctx
 }
 
 func (tm *transactionManager) GetQueryEngine(ctx context.Context) QueryEngine {
-	tx, ok := ctx.Value(key).(QueryEngine)
+	tx, ok := ctx.Value(TxKey).(QueryEngine)
 	if ok && tx != nil {
 		return tx
 	}
 
 	return tm.pool
+}
+
+func (tm *transactionManager) BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, error) {
+	return tm.pool.BeginTx(ctx, txOptions)
 }

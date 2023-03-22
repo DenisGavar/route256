@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+//go:generate mockgen -source="client.go" -destination="mocks/client_mock.go" -package=mocks . LomsClient
 type LomsClient interface {
 	Stocks(context.Context, *lomsServiceAPI.StocksRequest) (*lomsServiceAPI.StocksResponse, error)
 	CreateOrder(context.Context, *lomsServiceAPI.CreateOrderRequest) (*lomsServiceAPI.CreateOrderResponse, error)

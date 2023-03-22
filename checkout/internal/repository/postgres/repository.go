@@ -14,7 +14,7 @@ const (
 type CheckoutRepository interface {
 	AddToCart(ctx context.Context, addToCartRequest *model.AddToCartRequest) error
 	ListCart(ctx context.Context, listCartRequest *model.ListCartRequest) (*model.ListCartResponse, error)
-	DeleteFromCart(ctx context.Context, deleteFromRequest *model.DeleteFromCartRequest) error
+	DeleteFromCart(ctx context.Context, deleteFromCartRequest *model.DeleteFromCartRequest) error
 }
 
 var _ CheckoutRepository = (*repository)(nil)

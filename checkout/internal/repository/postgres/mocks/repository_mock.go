@@ -50,17 +50,17 @@ func (mr *MockCheckoutRepositoryMockRecorder) AddToCart(ctx, addToCartRequest in
 }
 
 // DeleteFromCart mocks base method.
-func (m *MockCheckoutRepository) DeleteFromCart(ctx context.Context, deleteFromRequest *model.DeleteFromCartRequest) error {
+func (m *MockCheckoutRepository) DeleteFromCart(ctx context.Context, deleteFromCartRequest *model.DeleteFromCartRequest) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteFromCart", ctx, deleteFromRequest)
+	ret := m.ctrl.Call(m, "DeleteFromCart", ctx, deleteFromCartRequest)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DeleteFromCart indicates an expected call of DeleteFromCart.
-func (mr *MockCheckoutRepositoryMockRecorder) DeleteFromCart(ctx, deleteFromRequest interface{}) *gomock.Call {
+func (mr *MockCheckoutRepositoryMockRecorder) DeleteFromCart(ctx, deleteFromCartRequest interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFromCart", reflect.TypeOf((*MockCheckoutRepository)(nil).DeleteFromCart), ctx, deleteFromRequest)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteFromCart", reflect.TypeOf((*MockCheckoutRepository)(nil).DeleteFromCart), ctx, deleteFromCartRequest)
 }
 
 // ListCart mocks base method.

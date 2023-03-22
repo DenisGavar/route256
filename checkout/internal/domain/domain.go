@@ -12,8 +12,13 @@ import (
 )
 
 var (
-	ErrNotEnoughItems  = errors.New("not enough items")
-	ErrGettingListCart = errors.New("getting list cart")
+	ErrNotEnoughItems   = errors.New("not enough items")
+	ErrGettingListCart  = errors.New("getting list cart")
+	ErrGettingProduct   = errors.New("getting product")
+	ErrCreatingOrder    = errors.New("creating order")
+	ErrDeletingFromCart = errors.New("deleting from cart")
+	ErrCheckingStocks   = errors.New("checking stocks")
+	ErrAddingToCart     = errors.New("adding to cart")
 )
 
 type repo struct {

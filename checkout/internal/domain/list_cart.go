@@ -38,7 +38,7 @@ func (s *service) ListCart(ctx context.Context, req *model.ListCartRequest) (*mo
 			// если ошибка при получении данных, то возвращаем ошибку
 			return &workerpool.Result[*model.CartItem]{
 				Out:   nil,
-				Error: errors.WithMessage(err, "getting product"),
+				Error: errors.WithMessage(err, ErrGettingProduct.Error()),
 			}
 		}
 
@@ -74,11 +74,12 @@ func (s *service) ListCart(ctx context.Context, req *model.ListCartRequest) (*mo
 		for result := range results {
 			if result.Error != nil {
 				resultErr = result.Error
+			} else {
+				mux.Lock()
+				response.Items = append(response.Items, result.Out)
+				response.TotalPrice += result.Out.Price * result.Out.Count
+				mux.Unlock()
 			}
-			mux.Lock()
-			response.Items = append(response.Items, result.Out)
-			response.TotalPrice += result.Out.Price * result.Out.Count
-			mux.Unlock()
 			// отмечаем, что задача выполнена, результат получен
 			pool.JobDone()
 		}
@@ -93,11 +94,4 @@ func (s *service) ListCart(ctx context.Context, req *model.ListCartRequest) (*mo
 	}
 
 	return response, nil
-}
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
 }
