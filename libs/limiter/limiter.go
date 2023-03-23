@@ -6,10 +6,6 @@ import (
 )
 
 type Limiter struct {
-	// допустимый "всплеск" запросов в единицу времени
-	maxCount int
-	// доступных запросов в еденицу времени
-	count int
 	// время освобождения одного запроса
 	ticker *time.Ticker
 	// канал для блокировки
@@ -42,10 +38,8 @@ func (l *Limiter) Wait(ctx context.Context) error {
 // count - количество запросов
 func NewLimiter(d time.Duration, count int) *Limiter {
 	l := &Limiter{
-		maxCount: count,
-		count:    count,
-		ticker:   time.NewTicker(d / time.Duration(count)),
-		ch:       make(chan struct{}, count),
+		ticker: time.NewTicker(d / time.Duration(count)),
+		ch:     make(chan struct{}, count),
 	}
 	go l.run()
 
