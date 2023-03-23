@@ -5,6 +5,7 @@ import (
 	"errors"
 	"route256/checkout/internal/domain/model"
 	product "route256/checkout/pkg/product-service_v1"
+	workerPool "route256/libs/worker-pool"
 	loms "route256/loms/pkg/loms_v1"
 )
 
@@ -52,14 +53,12 @@ type Limiter interface {
 }
 
 type productServiceSettings struct {
-	listCartWorkersCount int
-	limiter              Limiter
+	limiter Limiter
 }
 
-func NewProductServiceSettings(listCartWorkersCount int, limiter Limiter) *productServiceSettings {
+func NewProductServiceSettings(limiter Limiter) *productServiceSettings {
 	return &productServiceSettings{
-		listCartWorkersCount: listCartWorkersCount,
-		limiter:              limiter,
+		limiter: limiter,
 	}
 }
 
@@ -84,12 +83,14 @@ type service struct {
 	lomsClient     LomsClient
 	productService productService
 	repository     repository
+	wp             workerPool.Pool[*model.CartItem, *model.CartItem]
 }
 
-func NewService(lomsClient LomsClient, productService productService, repository repository) *service {
+func NewService(lomsClient LomsClient, productService productService, repository repository, workerPool workerPool.Pool[*model.CartItem, *model.CartItem]) *service {
 	return &service{
 		lomsClient:     lomsClient,
 		productService: productService,
 		repository:     repository,
+		wp:             workerPool,
 	}
 }

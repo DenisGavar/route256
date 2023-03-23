@@ -4,7 +4,7 @@ import (
 	"context"
 	"route256/checkout/internal/domain/model"
 	product "route256/checkout/pkg/product-service_v1"
-	workerpool "route256/libs/worker-pool"
+	workerPool "route256/libs/worker-pool"
 	"sync"
 
 	"github.com/pkg/errors"
@@ -19,24 +19,24 @@ func (s *service) ListCart(ctx context.Context, req *model.ListCartRequest) (*mo
 
 	// для каждого товара получаем наименование и цену, считаем итого
 
-	// инициализируем worker pool
-	// количество worker-ов не больше указанного значения в конфиге
-	// функция для worker-а дополняет структуру *model.CartItem
-	pool, results := workerpool.New[*model.CartItem, *model.CartItem](
-		ctx,
-		s.productService.productServiceSettings.listCartWorkersCount,
-	)
-	pool.Init(ctx)
+	// // инициализируем worker pool
+	// // количество worker-ов не больше указанного значения в конфиге
+	// // функция для worker-а дополняет структуру *model.CartItem
+	// pool, results := workerpool.New[*model.CartItem, *model.CartItem](
+	// 	ctx,
+	// 	s.productService.productServiceSettings.listCartWorkersCount,
+	// )
+	// pool.Init(ctx)
 
 	// функция для worker-а
-	callback := func(cartItem *model.CartItem) *workerpool.Result[*model.CartItem] {
+	callback := func(cartItem *model.CartItem) *workerPool.Result[*model.CartItem] {
 		// вкючаем лимитер, значение передаётся через конфиг
 		s.productService.productServiceSettings.limiter.Wait(ctx)
 		// получаем данные из product service
 		productResp, err := s.productService.productServiceClient.GetProduct(ctx, &product.GetProductRequest{Sku: cartItem.Sku})
 		if err != nil {
 			// если ошибка при получении данных, то возвращаем ошибку
-			return &workerpool.Result[*model.CartItem]{
+			return &workerPool.Result[*model.CartItem]{
 				Out:   nil,
 				Error: errors.WithMessage(err, "getting product"),
 			}
@@ -45,7 +45,7 @@ func (s *service) ListCart(ctx context.Context, req *model.ListCartRequest) (*mo
 		// возвращаем дополненную структуру
 		cartItem.Price = productResp.GetPrice()
 		cartItem.Name = productResp.GetName()
-		return &workerpool.Result[*model.CartItem]{
+		return &workerPool.Result[*model.CartItem]{
 			Out:   cartItem,
 			Error: nil,
 		}
@@ -53,15 +53,26 @@ func (s *service) ListCart(ctx context.Context, req *model.ListCartRequest) (*mo
 
 	// mutex для записи результата
 	var mux sync.Mutex
+	// wg для гарантированного выполнения всех задач
+	var wg sync.WaitGroup
 
+	// создаём канал для чтения результатов, буфер на количество запрашиваемых sku
+	results := make(chan *workerPool.Result[*model.CartItem], len(listCart.Items))
+	// закрываем канал результатов
+	defer close(results)
+
+	// добавляем в wg количество задач для обработки
+	wg.Add(len(listCart.Items))
 	// добавляем в worker pool каждую sku для обработки
-	// не в горутине, т.к. нам надо гарантированно добавить все sku
-	for _, cartItem := range listCart.Items {
-		pool.Push(ctx, &workerpool.Job[*model.CartItem, *model.CartItem]{
-			Callback: callback,
-			Args:     cartItem,
-		})
-	}
+	go func() {
+		for _, cartItem := range listCart.Items {
+			s.wp.Push(ctx, &workerPool.Job[*model.CartItem, *model.CartItem]{
+				Callback: callback,
+				Args:     cartItem,
+				Results:  results,
+			})
+		}
+	}()
 
 	// собираем результат
 	var resultErr error
@@ -80,12 +91,14 @@ func (s *service) ListCart(ctx context.Context, req *model.ListCartRequest) (*mo
 			response.TotalPrice += result.Out.Price * result.Out.Count
 			mux.Unlock()
 			// отмечаем, что задача выполнена, результат получен
-			pool.JobDone()
+			s.wp.JobDone()
+			// результат получен
+			wg.Done()
 		}
 	}()
 
-	// останавливаем worker pool, передаём аргумент, что ждём завершения всех отправленных задач
-	pool.Stop(true)
+	// дожидаемся выполнения всех задач
+	wg.Wait()
 
 	// если при обращении к product service были ошибки
 	if resultErr != nil {
@@ -93,11 +106,4 @@ func (s *service) ListCart(ctx context.Context, req *model.ListCartRequest) (*mo
 	}
 
 	return response, nil
-}
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
 }
