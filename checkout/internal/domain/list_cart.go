@@ -19,15 +19,6 @@ func (s *service) ListCart(ctx context.Context, req *model.ListCartRequest) (*mo
 
 	// для каждого товара получаем наименование и цену, считаем итого
 
-	// // инициализируем worker pool
-	// // количество worker-ов не больше указанного значения в конфиге
-	// // функция для worker-а дополняет структуру *model.CartItem
-	// pool, results := workerpool.New[*model.CartItem, *model.CartItem](
-	// 	ctx,
-	// 	s.productService.productServiceSettings.listCartWorkersCount,
-	// )
-	// pool.Init(ctx)
-
 	// функция для worker-а
 	callback := func(cartItem *model.CartItem) *workerPool.Result[*model.CartItem] {
 		// вкючаем лимитер, значение передаётся через конфиг
