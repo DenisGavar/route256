@@ -1,4 +1,12 @@
 mode: count
+route256/loms/internal/domain/order_payed.go:10.87,15.16 2 3
+route256/loms/internal/domain/order_payed.go:21.2,22.16 2 2
+route256/loms/internal/domain/order_payed.go:26.2,26.12 1 1
+route256/loms/internal/domain/order_payed.go:15.16,17.3 1 1
+route256/loms/internal/domain/order_payed.go:22.16,24.3 1 1
+route256/loms/internal/domain/orders_to_cancel.go:11.108,15.16 2 2
+route256/loms/internal/domain/orders_to_cancel.go:19.2,19.22 1 1
+route256/loms/internal/domain/orders_to_cancel.go:15.16,17.3 1 1
 route256/loms/internal/domain/stocks.go:10.104,13.16 2 2
 route256/loms/internal/domain/stocks.go:17.2,17.22 1 1
 route256/loms/internal/domain/stocks.go:13.16,15.3 1 1
@@ -45,11 +53,3 @@ route256/loms/internal/domain/domain.go:50.38,54.2 1 22
 route256/loms/internal/domain/list_order.go:10.113,14.16 2 2
 route256/loms/internal/domain/list_order.go:18.2,18.22 1 1
 route256/loms/internal/domain/list_order.go:14.16,16.3 1 1
-route256/loms/internal/domain/order_payed.go:10.87,15.16 2 3
-route256/loms/internal/domain/order_payed.go:21.2,22.16 2 2
-route256/loms/internal/domain/order_payed.go:26.2,26.12 1 1
-route256/loms/internal/domain/order_payed.go:15.16,17.3 1 1
-route256/loms/internal/domain/order_payed.go:22.16,24.3 1 1
-route256/loms/internal/domain/orders_to_cancel.go:11.108,15.16 2 2
-route256/loms/internal/domain/orders_to_cancel.go:19.2,19.22 1 1
-route256/loms/internal/domain/orders_to_cancel.go:15.16,17.3 1 1
