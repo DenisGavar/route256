@@ -11,9 +11,12 @@ import (
 	productService "route256/checkout/internal/clients/grpc/product-service"
 	"route256/checkout/internal/config"
 	"route256/checkout/internal/domain"
+	"route256/checkout/internal/domain/model"
 	repository "route256/checkout/internal/repository/postgres"
 	desc "route256/checkout/pkg/checkout_v1"
+	"route256/libs/limiter"
 	"route256/libs/transactor"
+	workerPool "route256/libs/worker-pool"
 	"sync"
 	"time"
 
@@ -83,6 +86,14 @@ func runGRPC() error {
 	defer productServiceConn.Close()
 	productServiceClient := productService.New(productServiceConn, config.ConfigData.Services.ProductService.Token)
 
+	rateLimit := config.ConfigData.Services.ProductService.RateLimit
+
+	productServiceSettings := domain.NewProductServiceSettings(
+		limiter.NewLimiter(time.Second, rateLimit),
+	)
+
+	productService := domain.NewProductService(productServiceClient, *productServiceSettings)
+
 	// подключаемся к БД
 	ctx, cacnel := context.WithCancel(context.Background())
 	defer cacnel()
@@ -113,7 +124,14 @@ func runGRPC() error {
 
 	domainRepository := domain.NewRepository(repo, queryEngineProvider)
 
-	businessLogic := domain.NewService(lomsClient, productServiceClient, domainRepository)
+	// создаём worker pool для обработки запросов list cart из product service
+	wp := workerPool.New[*model.CartItem, *model.CartItem](
+		ctx,
+		config.ConfigData.Services.ProductService.ListCartWorkersCount,
+	)
+	wp.Init(ctx)
+
+	businessLogic := domain.NewService(lomsClient, productService, domainRepository, wp)
 
 	desc.RegisterCheckoutV1Server(s, checkoutV1.NewCheckoutV1(businessLogic))
 

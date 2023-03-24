@@ -8,6 +8,7 @@ import (
 	"route256/libs/transactor"
 	lomsV1 "route256/loms/internal/api/loms_v1"
 	"route256/loms/internal/config"
+	cancelorder "route256/loms/internal/daemons/cancel-order"
 	"route256/loms/internal/domain"
 	repository "route256/loms/internal/repository/postgres"
 	desc "route256/loms/pkg/loms_v1"
@@ -65,6 +66,12 @@ func main() {
 	businessLogic := domain.NewService(domainRepository)
 
 	desc.RegisterLOMSV1Server(s, lomsV1.NewLomsV1(businessLogic))
+
+	// запускаем фоном отмену заказов
+	cancelOrderDaemon := cancelorder.NewCancelOrderDaemon(businessLogic)
+	go cancelOrderDaemon.RunCancelDaemon(
+		config.ConfigData.Services.CancelOrderDaemon.WorkersCount,
+		time.Minute*time.Duration(config.ConfigData.Services.CancelOrderDaemon.CancelOrderTimeInMinutes))
 
 	log.Println("grpc server at", config.ConfigData.Services.Loms.Port)
 

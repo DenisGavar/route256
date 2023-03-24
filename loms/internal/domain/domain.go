@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"route256/loms/internal/domain/model"
+	"time"
 )
 
 var (
@@ -23,6 +24,7 @@ type LomsRepository interface {
 	Stocks(ctx context.Context, stocksRequest *model.StocksRequest) (*model.StocksResponse, error)
 	ReserveItems(ctx context.Context, orderId int64, req *model.ReserveStocksItem) error
 	ChangeStatus(ctx context.Context, orderId int64, status string) error
+	OrdersToCancel(ctx context.Context, time time.Time) ([]*model.CancelOrderRequest, error)
 }
 
 type repository struct {

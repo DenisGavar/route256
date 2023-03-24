@@ -65,3 +65,18 @@ func FromRepositoryToMolelReserveItem(reserveItem *schema.ReserveItem) *model.Re
 		Count:       reserveItem.Count,
 	}
 }
+
+func FromRepositoryToMolelCancelOrderRequestSlice(cancelOrderRequest []*schema.CancelOrderRequest) []*model.CancelOrderRequest {
+	cancelOrderRequestSlice := make([]*model.CancelOrderRequest, 0, len(cancelOrderRequest))
+	for _, i := range cancelOrderRequest {
+		cancelOrderRequestSlice = append(cancelOrderRequestSlice, FromRepositoryToMolelCancelOrderRequest(i))
+	}
+
+	return cancelOrderRequestSlice
+}
+
+func FromRepositoryToMolelCancelOrderRequest(cancelOrderRequest *schema.CancelOrderRequest) *model.CancelOrderRequest {
+	return &model.CancelOrderRequest{
+		OrderId: cancelOrderRequest.OrderId,
+	}
+}

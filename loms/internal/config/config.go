@@ -12,12 +12,18 @@ type ConfigStruct struct {
 }
 
 type Services struct {
-	Loms          Loms          `yaml:"loms"`
-	LomsPgBouncer LomsPgBouncer `yaml:"lomsPgBouncer"`
+	Loms              Loms              `yaml:"loms"`
+	LomsPgBouncer     LomsPgBouncer     `yaml:"lomsPgBouncer"`
+	CancelOrderDaemon CancelOrderDaemon `yaml:"cancelOrderDaemon"`
 }
 
 type Loms struct {
 	Port string `yaml:"port"`
+}
+
+type CancelOrderDaemon struct {
+	WorkersCount             int `yaml:"workersCount"`
+	CancelOrderTimeInMinutes int `yaml:"cancelOrderTimeInMinutes"`
 }
 
 type LomsPgBouncer struct {
