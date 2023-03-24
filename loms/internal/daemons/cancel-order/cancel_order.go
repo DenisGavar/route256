@@ -3,7 +3,7 @@ package cancel_order
 import (
 	"context"
 	"log"
-	workerpool "route256/libs/worker-pool"
+	workerPool "route256/libs/worker-pool"
 	"route256/loms/internal/domain/model"
 	"time"
 
@@ -36,34 +36,41 @@ func NewCancelOrderDaemon(orderCanceler OrderCanceler) *cancelOrderDaemon {
 var _ CancelOrderDaemon = (*cancelOrderDaemon)(nil)
 
 func (c *cancelOrderDaemon) RunCancelDaemon(workersCount int, cancelOrderTime time.Duration) {
-	ctx, cacnel := context.WithCancel(context.Background())
-	defer cacnel()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	ticker := time.NewTicker(time.Minute * 1)
 
 	// создаём функцию на обработку
-	callback := func(cancelOrderRequest *model.CancelOrderRequest) *workerpool.Result[*model.CancelOrderRequest] {
+	callback := func(cancelOrderRequest *model.CancelOrderRequest) *workerPool.Result[*model.CancelOrderRequest] {
 		log.Println("daemon: cancelling order")
 
 		err := c.orderCanceler.CancelOrder(ctx, cancelOrderRequest)
 		if err != nil {
 			// если ошибка при получении данных, то возвращаем ошибку
-			return &workerpool.Result[*model.CancelOrderRequest]{
+			return &workerPool.Result[*model.CancelOrderRequest]{
 				Out:   nil,
 				Error: errors.WithMessage(err, "cancelling order"),
 			}
 		}
 
 		// возвращаем ту же самую структуру, чтобы было понятно, какой заказ отменили
-		return &workerpool.Result[*model.CancelOrderRequest]{
+		return &workerPool.Result[*model.CancelOrderRequest]{
 			Out:   cancelOrderRequest,
 			Error: nil,
 		}
 	}
 
 	// запускаем воркеров
-	pool, results := workerpool.New[*model.CancelOrderRequest, *model.CancelOrderRequest](ctx, workersCount)
+	pool := workerPool.New[*model.CancelOrderRequest, *model.CancelOrderRequest](ctx, workersCount)
 	pool.Init(ctx)
+
+	// создаём канал для чтения результатов, буфер на количество воркеров
+	results := make(chan *workerPool.Result[*model.CancelOrderRequest], workersCount)
+	// закрываем канал результатов
+	defer close(results)
+	// останавливаем worker pool (закрываем канал задач)
+	defer pool.Stop(false)
 
 	go func() {
 		// читаем из канала пока он открыт
@@ -92,15 +99,14 @@ func (c *cancelOrderDaemon) RunCancelDaemon(workersCount int, cancelOrderTime ti
 			}
 			for _, orderToCancel := range ordersToCancel {
 				// отменяем заказы (работа для воркеров)
-				pool.Push(ctx, &workerpool.Job[*model.CancelOrderRequest, *model.CancelOrderRequest]{
+				pool.Push(ctx, &workerPool.Job[*model.CancelOrderRequest, *model.CancelOrderRequest]{
 					Callback: callback,
 					Args:     orderToCancel,
+					Results:  results,
 				})
 			}
 		case <-ctx.Done():
 			// вышли по отмене контекста
-			// останавливаем worker pool, передаём аргумент, что ждём завершения всех отправленных задач
-			pool.Stop(true)
 			return
 		}
 	}

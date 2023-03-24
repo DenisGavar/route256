@@ -17,6 +17,7 @@ import (
 )
 
 func TestListOrder(t *testing.T) {
+	t.Parallel()
 	type lomsRepositoryMockFunc func(mc *gomock.Controller) repository.LomsRepository
 
 	type args struct {

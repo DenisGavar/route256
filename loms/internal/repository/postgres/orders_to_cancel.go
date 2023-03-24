@@ -19,7 +19,7 @@ func (r *repository) OrdersToCancel(ctx context.Context, time time.Time) ([]*mod
 
 	// получаем заказы, которые:
 	// в статусе awaiting_payment
-	// время изменения меьше установленного
+	// время изменения меньше установленного
 	query := pgBuilder.Select("id").
 		From(ordersTable).
 		Where("status = ?", model.OrderStatusAwaitingPayment).

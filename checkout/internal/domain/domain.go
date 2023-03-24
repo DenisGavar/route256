@@ -9,6 +9,7 @@ import (
 	repository "route256/checkout/internal/repository/postgres"
 	"route256/libs/limiter"
 	"route256/libs/transactor"
+	workerPool "route256/libs/worker-pool"
 )
 
 var (
@@ -40,10 +41,9 @@ type productServiceSettings struct {
 	limiter              limiter.Limiter
 }
 
-func NewProductServiceSettings(listCartWorkersCount int, limiter limiter.Limiter) *productServiceSettings {
+func NewProductServiceSettings(limiter limiter.Limiter) *productServiceSettings {
 	return &productServiceSettings{
-		listCartWorkersCount: listCartWorkersCount,
-		limiter:              limiter,
+		limiter: limiter,
 	}
 }
 
@@ -70,13 +70,15 @@ type service struct {
 	lomsClient     loms.LomsClient
 	productService *productService
 	repository     *repo
+	wp             workerPool.Pool[*model.CartItem, *model.CartItem]
 }
 
-func NewService(lomsClient loms.LomsClient, productService *productService, repo *repo) *service {
+func NewService(lomsClient loms.LomsClient, productService *productService, repo *repo, workerPool workerPool.Pool[*model.CartItem, *model.CartItem]) *service {
 	return &service{
 		lomsClient:     lomsClient,
 		productService: productService,
 		repository:     repo,
+		wp:             workerPool,
 	}
 }
 
@@ -91,6 +93,8 @@ func NewMockService(deps ...interface{}) *service {
 			ns.productService = s
 		case *repo:
 			ns.repository = s
+		case workerPool.Pool[*model.CartItem, *model.CartItem]:
+			ns.wp = s
 		}
 	}
 

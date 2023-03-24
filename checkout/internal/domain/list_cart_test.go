@@ -15,6 +15,7 @@ import (
 	limiterMock "route256/libs/limiter/mocks"
 	"route256/libs/transactor"
 	transactorMock "route256/libs/transactor/mocks"
+	workerPool "route256/libs/worker-pool"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/golang/mock/gomock"
@@ -22,6 +23,7 @@ import (
 )
 
 func TestListCart(t *testing.T) {
+	t.Parallel()
 	type checkoutRepositoryMockFunc func(mc *gomock.Controller) repository.CheckoutRepository
 	type limiterMockFunc func(mc *gomock.Controller) limiter.Limiter
 	type productServiceClientMockFunc func(mc *gomock.Controller) productServiceGRPCClient.ProductServiceClient
@@ -168,12 +170,19 @@ func TestListCart(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
+			//
+			wp := workerPool.New[*model.CartItem, *model.CartItem](
+				ctx,
+				listCartWorkersCount,
+			)
+			wp.Init(ctx)
+
 			repo := NewRepository(tt.checkoutRepositoryMock(mc), transactor.NewTransactionManager(dbMock))
 
-			productServiceSettings := NewProductServiceSettings(listCartWorkersCount, tt.limiterMock(mc))
+			productServiceSettings := NewProductServiceSettings(tt.limiterMock(mc))
 			productService := NewProductService(tt.productServiceClientMock(mc), productServiceSettings)
 
-			client := NewMockService(repo, productService)
+			client := NewMockService(repo, productService, wp)
 
 			res, err := client.ListCart(tt.args.ctx, tt.args.req)
 			require.Equal(t, tt.want, res)

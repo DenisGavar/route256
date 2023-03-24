@@ -18,6 +18,7 @@ import (
 )
 
 func TestDeleteFromCart(t *testing.T) {
+	t.Parallel()
 	type checkoutRepositoryMockFunc func(mc *gomock.Controller) repository.CheckoutRepository
 	type dbMockFunc func(mc *gomock.Controller) transactor.DB
 

@@ -20,6 +20,7 @@ import (
 )
 
 func TestAddToCart(t *testing.T) {
+	t.Parallel()
 	type checkoutRepositoryMockFunc func(mc *gomock.Controller) repository.CheckoutRepository
 	type lomsClientMockFunc func(mc *gomock.Controller) lomsClient.LomsClient
 

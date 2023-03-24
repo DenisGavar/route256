@@ -18,6 +18,7 @@ import (
 )
 
 func TestCancelOrder(t *testing.T) {
+	t.Parallel()
 	type lomsRepositoryMockFunc func(mc *gomock.Controller) repository.LomsRepository
 	type dbMockFunc func(mc *gomock.Controller) transactor.DB
 
