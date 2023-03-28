@@ -10,3 +10,10 @@ services:
     userDB: ""
     passwordDB: ""
     nameDB: ""
+  kafka:
+    workersCount: 
+    topicForOrders: ""
+    brokers:
+      - ""
+      - ""
+      - ""

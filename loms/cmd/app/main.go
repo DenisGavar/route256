@@ -77,25 +77,20 @@ func main() {
 		time.Minute*time.Duration(config.ConfigData.Services.CancelOrderDaemon.CancelOrderTimeInMinutes))
 
 	// запускаем фоном отмену заказов
-	var brokers = []string{
-		"kafka1:29091",
-		"kafka2:29092",
-		"kafka3:29093",
-	}
-	producer, err := kafka.NewSyncProducer(brokers)
+	producer, err := kafka.NewSyncProducer(config.ConfigData.Services.Kafka.Brokers)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	orderSender := sender.NewOrderSender(
 		producer,
-		"orders",
+		config.ConfigData.Services.Kafka.TopicForOrders,
 	)
 
 	sendOrderDaemon := sendOrder.NewSendOrderDaemon(businessLogic, orderSender)
 	go sendOrderDaemon.RunSendDaemon(
-		5,
-		"orders")
+		config.ConfigData.Services.Kafka.WorkersCount,
+		config.ConfigData.Services.Kafka.TopicForOrders)
 
 	log.Println("grpc server at", config.ConfigData.Services.Loms.Port)
 
