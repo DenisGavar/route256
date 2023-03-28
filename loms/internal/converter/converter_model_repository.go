@@ -80,3 +80,21 @@ func FromRepositoryToMolelCancelOrderRequest(cancelOrderRequest *schema.CancelOr
 		OrderId: cancelOrderRequest.OrderId,
 	}
 }
+
+func FromRepositoryToMolelOrderMessageSlice(orderMessages []*schema.OrderMessage) []*model.OrderMessage {
+	orderMessagesSlice := make([]*model.OrderMessage, 0, len(orderMessages))
+	for _, i := range orderMessages {
+		orderMessagesSlice = append(orderMessagesSlice, FromRepositoryToMolelOrderMessage(i))
+	}
+
+	return orderMessagesSlice
+}
+
+func FromRepositoryToMolelOrderMessage(orderMessage *schema.OrderMessage) *model.OrderMessage {
+	return &model.OrderMessage{
+		Id:        orderMessage.Id,
+		OrderId:   orderMessage.OrderId,
+		Message:   orderMessage.Message,
+		CreatedAt: orderMessage.CreatedAt,
+	}
+}

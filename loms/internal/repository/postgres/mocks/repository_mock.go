@@ -94,6 +94,35 @@ func (mr *MockLomsRepositoryMockRecorder) ListOrder(ctx, listOrderRequest interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListOrder", reflect.TypeOf((*MockLomsRepository)(nil).ListOrder), ctx, listOrderRequest)
 }
 
+// MessageSent mocks base method.
+func (m *MockLomsRepository) MessageSent(ctx context.Context, id int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessageSent", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MessageSent indicates an expected call of MessageSent.
+func (mr *MockLomsRepositoryMockRecorder) MessageSent(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessageSent", reflect.TypeOf((*MockLomsRepository)(nil).MessageSent), ctx, id)
+}
+
+// MessagesToSend mocks base method.
+func (m *MockLomsRepository) MessagesToSend(ctx context.Context) ([]*model.OrderMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MessagesToSend", ctx)
+	ret0, _ := ret[0].([]*model.OrderMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MessagesToSend indicates an expected call of MessagesToSend.
+func (mr *MockLomsRepositoryMockRecorder) MessagesToSend(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MessagesToSend", reflect.TypeOf((*MockLomsRepository)(nil).MessagesToSend), ctx)
+}
+
 // OrdersToCancel mocks base method.
 func (m *MockLomsRepository) OrdersToCancel(ctx context.Context, time time.Time) ([]*model.CancelOrderRequest, error) {
 	m.ctrl.T.Helper()

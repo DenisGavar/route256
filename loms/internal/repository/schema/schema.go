@@ -1,5 +1,7 @@
 package schema
 
+import "time"
+
 type StockItem struct {
 	StockId     int64  `db:"id"`
 	Sku         int64  `db:"sku"`
@@ -26,4 +28,11 @@ type ReserveItem struct {
 
 type CancelOrderRequest struct {
 	OrderId int64 `db:"id"`
+}
+
+type OrderMessage struct {
+	Id        int64     `db:"id"`
+	OrderId   int64     `db:"orders_id"`
+	Message   string    `db:"payload"`
+	CreatedAt time.Time `db:"created_at"`
 }

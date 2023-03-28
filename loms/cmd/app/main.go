@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"route256/libs/kafka"
 	"route256/libs/transactor"
 	lomsV1 "route256/loms/internal/api/loms_v1"
 	"route256/loms/internal/config"
-	cancelorder "route256/loms/internal/daemons/cancel-order"
+	cancelOrder "route256/loms/internal/daemons/cancel-order"
+	sendOrder "route256/loms/internal/daemons/send-order"
 	"route256/loms/internal/domain"
 	repository "route256/loms/internal/repository/postgres"
+	"route256/loms/internal/sender"
 	desc "route256/loms/pkg/loms_v1"
 	"time"
 
@@ -68,10 +71,31 @@ func main() {
 	desc.RegisterLOMSV1Server(s, lomsV1.NewLomsV1(businessLogic))
 
 	// запускаем фоном отмену заказов
-	cancelOrderDaemon := cancelorder.NewCancelOrderDaemon(businessLogic)
+	cancelOrderDaemon := cancelOrder.NewCancelOrderDaemon(businessLogic)
 	go cancelOrderDaemon.RunCancelDaemon(
 		config.ConfigData.Services.CancelOrderDaemon.WorkersCount,
 		time.Minute*time.Duration(config.ConfigData.Services.CancelOrderDaemon.CancelOrderTimeInMinutes))
+
+	// запускаем фоном отмену заказов
+	var brokers = []string{
+		"kafka1:29091",
+		"kafka2:29092",
+		"kafka3:29093",
+	}
+	producer, err := kafka.NewSyncProducer(brokers)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	orderSender := sender.NewOrderSender(
+		producer,
+		"orders",
+	)
+
+	sendOrderDaemon := sendOrder.NewSendOrderDaemon(businessLogic, orderSender)
+	go sendOrderDaemon.RunSendDaemon(
+		5,
+		"orders")
 
 	log.Println("grpc server at", config.ConfigData.Services.Loms.Port)
 
