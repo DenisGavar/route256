@@ -14,7 +14,6 @@ const (
 	itemsStocksReservationTable = "items_stocks_reservation"
 )
 
-//go:generate mockgen -source="repository.go" -destination="mocks/repository_mock.go" -package=mocks . LomsRepository
 type LomsRepository interface {
 	CreateOrder(ctx context.Context, createOrderRequest *model.CreateOrderRequest) (*model.CreateOrderResponse, error)
 	ListOrder(ctx context.Context, listOrderRequest *model.ListOrderRequest) (*model.ListOrderResponse, error)

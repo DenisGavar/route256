@@ -6,7 +6,6 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 
-	//"github.com/jackc/pgx/v4/pgxpool"
 	"go.uber.org/multierr"
 )
 
@@ -27,7 +26,6 @@ type Transactor interface {
 	BeginTx(ctx context.Context, txOptions pgx.TxOptions) (pgx.Tx, error)
 }
 
-//go:generate mockgen -source="transactor.go" -destination="mocks/db_mock.go" -package=mocks . DB
 type DB interface {
 	QueryEngine
 	Transactor
