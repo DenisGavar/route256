@@ -6,21 +6,21 @@ import (
 	"os"
 	"os/signal"
 	"route256/libs/kafka"
+	configServices "route256/notifications/internal/config"
 	"sync"
 	"syscall"
 
 	"github.com/Shopify/sarama"
 )
 
-var brokers = []string{
-	"kafka1:29091",
-	"kafka2:29092",
-	"kafka3:29093",
-}
-
 func main() {
 	keepRunning := true
 	log.Println("Starting a new Sarama consumer")
+
+	err := configServices.Init()
+	if err != nil {
+		log.Fatal("config init", err)
+	}
 
 	/**
 	 * Construct a new Sarama configuration.
@@ -30,8 +30,7 @@ func main() {
 	config.Version = sarama.MaxVersion
 	config.Consumer.Offsets.Initial = sarama.OffsetOldest
 
-	const BalanceStrategy = "roundrobin"
-	switch BalanceStrategy {
+	switch configServices.ConfigData.Services.Kafka.BalanceStrategy {
 	case "sticky":
 		config.Consumer.Group.Rebalance.GroupStrategies = []sarama.BalanceStrategy{sarama.BalanceStrategySticky}
 	case "roundrobin":
@@ -45,10 +44,8 @@ func main() {
 	 */
 	consumer := kafka.NewConsumerGroup()
 
-	const groupName = "group-+v"
-
 	ctx, cancel := context.WithCancel(context.Background())
-	client, err := sarama.NewConsumerGroup(brokers, groupName, config)
+	client, err := sarama.NewConsumerGroup(configServices.ConfigData.Services.Kafka.Brokers, configServices.ConfigData.Services.Kafka.GroupName, config)
 	if err != nil {
 		log.Panicf("Error creating consumer group client: %v", err)
 	}
@@ -62,7 +59,7 @@ func main() {
 			// `Consume` should be called inside an infinite loop, when a
 			// server-side rebalance happens, the consumer session will need to be
 			// recreated to get the new claims
-			if err := client.Consume(ctx, []string{"orders"}, &consumer); err != nil {
+			if err := client.Consume(ctx, []string{configServices.ConfigData.Services.Kafka.TopicForOrders}, &consumer); err != nil {
 				log.Panicf("Error from consumer: %v", err)
 			}
 			// check if context was cancelled, signaling that the consumer should stop
