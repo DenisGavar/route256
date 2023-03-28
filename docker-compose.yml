@@ -177,6 +177,7 @@ services:
       - KAFKA_INTER_BROKER_LISTENER_NAME=LISTENER_INT
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
       - KAFKA_BROKER_ID=1
+      - KAFKA_LOG4J_ROOT_LOGLEVEL=ERROR
       - ZOOKEEPER=zookeeper:2181
     networks:
       - net
@@ -197,6 +198,7 @@ services:
       - KAFKA_INTER_BROKER_LISTENER_NAME=LISTENER_INT
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
       - KAFKA_BROKER_ID=2
+      - KAFKA_LOG4J_ROOT_LOGLEVEL=ERROR
       - ZOOKEEPER=zookeeper:2181
     networks:
       - net
@@ -217,6 +219,7 @@ services:
       - KAFKA_INTER_BROKER_LISTENER_NAME=LISTENER_INT
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
       - KAFKA_BROKER_ID=3
+      - KAFKA_LOG4J_ROOT_LOGLEVEL=ERROR
       - ZOOKEEPER=zookeeper:2181
     networks:
       - net

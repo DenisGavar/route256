@@ -86,11 +86,12 @@ func (c *sendOrderDaemon) RunSendDaemon(workersCount int, topic string) {
 			if result.Error != nil {
 				// ошибку логируем
 				log.Println(result.Error)
-			}
-			// помечаем в БД сообщение отправленным
-			err := c.messager.MessageSent(ctx, result.Out)
-			if err != nil {
-				log.Println(err)
+			} else {
+				// помечаем в БД сообщение отправленным
+				err := c.messager.MessageSent(ctx, result.Out)
+				if err != nil {
+					log.Println(err)
+				}
 			}
 			// отмечаем, что задача выполнена, результат получен
 			pool.JobDone()
