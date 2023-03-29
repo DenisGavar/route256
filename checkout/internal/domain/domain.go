@@ -37,8 +37,7 @@ func NewRepository(checkoutRepository repository.CheckoutRepository, transaction
 var _ Service = (*service)(nil)
 
 type productServiceSettings struct {
-	listCartWorkersCount int
-	limiter              limiter.Limiter
+	limiter limiter.Limiter
 }
 
 func NewProductServiceSettings(limiter limiter.Limiter) *productServiceSettings {
