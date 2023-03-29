@@ -5,14 +5,18 @@ import (
 	"time"
 )
 
-type Limiter struct {
+type Limiter interface {
+	Wait(context.Context) error
+}
+
+type limiter struct {
 	// время освобождения одного запроса
 	ticker *time.Ticker
 	// канал для блокировки
 	ch chan struct{}
 }
 
-func (l *Limiter) run() {
+func (l *limiter) run() {
 	for {
 		// по таймеру вычитываем из канала
 		select {
@@ -23,7 +27,7 @@ func (l *Limiter) run() {
 	}
 }
 
-func (l *Limiter) Wait(ctx context.Context) error {
+func (l *limiter) Wait(ctx context.Context) error {
 	select {
 	case <-ctx.Done():
 		return ctx.Err()
@@ -36,8 +40,8 @@ func (l *Limiter) Wait(ctx context.Context) error {
 // создаёт лимитер
 // d - частота запросов
 // count - количество запросов
-func NewLimiter(d time.Duration, count int) *Limiter {
-	l := &Limiter{
+func NewLimiter(d time.Duration, count int) *limiter {
+	l := &limiter{
 		ticker: time.NewTicker(d / time.Duration(count)),
 		ch:     make(chan struct{}, count),
 	}

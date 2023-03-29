@@ -10,7 +10,7 @@ import (
 	"github.com/georgysavva/scany/pgxscan"
 )
 
-func (r *repo) ListCart(ctx context.Context, listCartRequest *model.ListCartRequest) (*model.ListCartResponse, error) {
+func (r *repository) ListCart(ctx context.Context, listCartRequest *model.ListCartRequest) (*model.ListCartResponse, error) {
 	// получаем список товаров в корзине
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 

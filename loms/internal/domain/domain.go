@@ -3,37 +3,31 @@ package domain
 import (
 	"context"
 	"errors"
+	"route256/libs/transactor"
 	"route256/loms/internal/domain/model"
-	"time"
+	repository "route256/loms/internal/repository/postgres"
 )
 
 var (
-	ErrNotEnoughItems = errors.New("not enough items")
+	ErrNotEnoughItems        = errors.New("not enough items")
+	ErrCheckingReserves      = errors.New("checking reserves")
+	ErrReturningReserves     = errors.New("returning reserves")
+	ErrClearingReserves      = errors.New("clearing reserves")
+	ErrChangingStatus        = errors.New("changing status")
+	ErrCreatingOrder         = errors.New("creating order")
+	ErrGettingStocks         = errors.New("getting stocks")
+	ErrReservingItems        = errors.New("reserving items")
+	ErrGettingListOrder      = errors.New("getting list order")
+	ErrGettingOrdersToCancel = errors.New("getting orders to cancel")
 )
 
-type TransactionManager interface {
-	RunRepeatableRead(ctx context.Context, f func(ctxTX context.Context) error) error
+type repo struct {
+	lomsRepository     repository.LomsRepository
+	transactionManager transactor.TransactionManager
 }
 
-type LomsRepository interface {
-	CreateOrder(ctx context.Context, createOrderRequest *model.CreateOrderRequest) (*model.CreateOrderResponse, error)
-	ListOrder(ctx context.Context, listOrderRequest *model.ListOrderRequest) (*model.ListOrderResponse, error)
-	ClearReserves(ctx context.Context, orderId int64) error
-	Reserves(ctx context.Context, orderId int64) (*model.Reserve, error)
-	ReturnReserve(ctx context.Context, reserveStocksItem *model.ReserveStocksItem) error
-	Stocks(ctx context.Context, stocksRequest *model.StocksRequest) (*model.StocksResponse, error)
-	ReserveItems(ctx context.Context, orderId int64, req *model.ReserveStocksItem) error
-	ChangeStatus(ctx context.Context, orderId int64, status string) error
-	OrdersToCancel(ctx context.Context, time time.Time) ([]*model.CancelOrderRequest, error)
-}
-
-type repository struct {
-	lomsRepository     LomsRepository
-	transactionManager TransactionManager
-}
-
-func NewRepository(lomsRepository LomsRepository, transactionManager TransactionManager) repository {
-	return repository{
+func NewRepository(lomsRepository repository.LomsRepository, transactionManager transactor.TransactionManager) *repo {
+	return &repo{
 		lomsRepository:     lomsRepository,
 		transactionManager: transactionManager,
 	}
@@ -50,11 +44,11 @@ type Service interface {
 }
 
 type service struct {
-	repository repository
+	repository *repo
 }
 
-func NewService(repository repository) *service {
+func NewService(repo *repo) *service {
 	return &service{
-		repository: repository,
+		repository: repo,
 	}
 }

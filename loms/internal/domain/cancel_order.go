@@ -14,21 +14,21 @@ func (s *service) CancelOrder(ctx context.Context, req *model.CancelOrderRequest
 		// получаем резервы, которые надо вернуть на склад
 		needToDropReserve, err := s.repository.lomsRepository.Reserves(ctxTX, req.OrderId)
 		if err != nil {
-			return errors.WithMessage(err, "checking reserves")
+			return errors.WithMessage(err, ErrCheckingReserves.Error())
 		}
 
 		// возвращаем резервы на склад
 		for _, reserveItem := range needToDropReserve.ReserveItems {
 			err := s.repository.lomsRepository.ReturnReserve(ctxTX, reserveItem)
 			if err != nil {
-				return errors.WithMessage(err, "returning reserves")
+				return errors.WithMessage(err, ErrReturningReserves.Error())
 			}
 		}
 
 		// очищаем резервы
 		err = s.repository.lomsRepository.ClearReserves(ctxTX, req.OrderId)
 		if err != nil {
-			return errors.WithMessage(err, "clearing reserves")
+			return errors.WithMessage(err, ErrClearingReserves.Error())
 		}
 
 		return nil
@@ -42,7 +42,7 @@ func (s *service) CancelOrder(ctx context.Context, req *model.CancelOrderRequest
 	// cancelled
 	err = s.repository.lomsRepository.ChangeStatus(ctx, req.OrderId, model.OrderStatusCancelled)
 	if err != nil {
-		return errors.WithMessage(err, "changing ctatus")
+		return errors.WithMessage(err, ErrChangingStatus.Error())
 	}
 
 	return nil

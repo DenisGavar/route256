@@ -9,7 +9,7 @@ import (
 	"github.com/georgysavva/scany/pgxscan"
 )
 
-func (r *repo) DeleteFromCart(ctx context.Context, deleteFromCartRequest *model.DeleteFromCartRequest) error {
+func (r *repository) DeleteFromCart(ctx context.Context, deleteFromCartRequest *model.DeleteFromCartRequest) error {
 	// убираем товары из корзины
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 

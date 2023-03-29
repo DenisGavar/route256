@@ -1,7 +1,10 @@
 package repository
 
 import (
+	"context"
 	"route256/libs/transactor"
+	"route256/loms/internal/domain/model"
+	"time"
 )
 
 const (
@@ -11,12 +14,24 @@ const (
 	itemsStocksReservationTable = "items_stocks_reservation"
 )
 
-type repo struct {
+type LomsRepository interface {
+	CreateOrder(ctx context.Context, createOrderRequest *model.CreateOrderRequest) (*model.CreateOrderResponse, error)
+	ListOrder(ctx context.Context, listOrderRequest *model.ListOrderRequest) (*model.ListOrderResponse, error)
+	ClearReserves(ctx context.Context, orderId int64) error
+	Reserves(ctx context.Context, orderId int64) (*model.Reserve, error)
+	ReturnReserve(ctx context.Context, reserveStocksItem *model.ReserveStocksItem) error
+	Stocks(ctx context.Context, stocksRequest *model.StocksRequest) (*model.StocksResponse, error)
+	ReserveItems(ctx context.Context, orderId int64, req *model.ReserveStocksItem) error
+	ChangeStatus(ctx context.Context, orderId int64, status string) error
+	OrdersToCancel(ctx context.Context, time time.Time) ([]*model.CancelOrderRequest, error)
+}
+
+type repository struct {
 	queryEngineProvider transactor.QueryEngineProvider
 }
 
-func NewRepo(queryEngineProvider transactor.QueryEngineProvider) *repo {
-	return &repo{
+func NewRepository(queryEngineProvider transactor.QueryEngineProvider) *repository {
+	return &repository{
 		queryEngineProvider: queryEngineProvider,
 	}
 }

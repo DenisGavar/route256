@@ -6,7 +6,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 )
 
-func (r *repo) ClearReserves(ctx context.Context, orderId int64) error {
+func (r *repository) ClearReserves(ctx context.Context, orderId int64) error {
 	// убираем товары из резерва
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 

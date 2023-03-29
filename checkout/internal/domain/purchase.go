@@ -22,7 +22,7 @@ func (s *service) Purchase(ctx context.Context, req *model.PurchaseRequest) (*mo
 		// получаем товары из корзины
 		listCart, err := s.repository.checkoutRepository.ListCart(ctxTX, &model.ListCartRequest{User: req.User})
 		if err != nil {
-			return errors.WithMessage(err, "getting list cart")
+			return errors.WithMessage(err, ErrGettingListCart.Error())
 		}
 
 		// если корзина пустая, то выходим
@@ -45,7 +45,7 @@ func (s *service) Purchase(ctx context.Context, req *model.PurchaseRequest) (*mo
 		// создаём заказ
 		order, err = s.lomsClient.CreateOrder(ctxTX, createOrderRequest)
 		if err != nil {
-			return errors.WithMessage(err, "creating order")
+			return errors.WithMessage(err, ErrCreatingOrder.Error())
 		}
 
 		// если заказ создали, то чистим корзину
@@ -56,7 +56,7 @@ func (s *service) Purchase(ctx context.Context, req *model.PurchaseRequest) (*mo
 				Count: cartItem.Count,
 			})
 			if err != nil {
-				return errors.WithMessage(err, "deleting from cart")
+				return errors.WithMessage(err, ErrDeletingFromCart.Error())
 			}
 		}
 

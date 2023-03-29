@@ -92,7 +92,7 @@ func runGRPC() error {
 		limiter.NewLimiter(time.Second, rateLimit),
 	)
 
-	productService := domain.NewProductService(productServiceClient, *productServiceSettings)
+	productService := domain.NewProductService(productServiceClient, productServiceSettings)
 
 	// подключаемся к БД
 	ctx, cacnel := context.WithCancel(context.Background())
@@ -120,7 +120,7 @@ func runGRPC() error {
 	configDB.MaxConns = 10
 
 	queryEngineProvider := transactor.NewTransactionManager(pool)
-	repo := repository.NewRepo(queryEngineProvider)
+	repo := repository.NewRepository(queryEngineProvider)
 
 	domainRepository := domain.NewRepository(repo, queryEngineProvider)
 

@@ -10,7 +10,7 @@ import (
 	"github.com/georgysavva/scany/pgxscan"
 )
 
-func (r *repo) ReserveItems(ctx context.Context, orderId int64, req *model.ReserveStocksItem) error {
+func (r *repository) ReserveItems(ctx context.Context, orderId int64, req *model.ReserveStocksItem) error {
 	log.Printf("reserve: %+v", req)
 
 	// резервируем товары на складах

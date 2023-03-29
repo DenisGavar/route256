@@ -7,7 +7,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 )
 
-func (r *repo) ChangeStatus(ctx context.Context, orderId int64, status string) error {
+func (r *repository) ChangeStatus(ctx context.Context, orderId int64, status string) error {
 	// меняем статус заказа
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 

@@ -14,7 +14,7 @@ func (s *service) AddToCart(ctx context.Context, req *model.AddToCartRequest) er
 	// проверяем, что товара достаточно на складах
 	stocks, err := s.lomsClient.Stocks(ctx, &loms.StocksRequest{Sku: req.Sku})
 	if err != nil {
-		return errors.WithMessage(err, "checking stocks")
+		return errors.WithMessage(err, ErrCheckingStocks.Error())
 	}
 
 	counter := int64(req.Count)
@@ -24,7 +24,7 @@ func (s *service) AddToCart(ctx context.Context, req *model.AddToCartRequest) er
 			// если товаров достаточно, что добавляем в корзину
 			err = s.repository.checkoutRepository.AddToCart(ctx, req)
 			if err != nil {
-				return errors.WithMessage(err, "adding to cart")
+				return errors.WithMessage(err, ErrAddingToCart.Error())
 			}
 			return nil
 		}
