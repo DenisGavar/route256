@@ -37,6 +37,8 @@ func main() {
 		config.Consumer.Group.Rebalance.GroupStrategies = []sarama.BalanceStrategy{sarama.BalanceStrategyRoundRobin}
 	case "range":
 		config.Consumer.Group.Rebalance.GroupStrategies = []sarama.BalanceStrategy{sarama.BalanceStrategyRange}
+	default:
+		log.Panicf("Unrecognized consumer group partition assignor: %s", configServices.ConfigData.Services.Kafka.BalanceStrategy)
 	}
 
 	/**

@@ -11,12 +11,11 @@ import (
 )
 
 func (r *repository) MessagesToSend(ctx context.Context) ([]*model.OrderMessage, error) {
-	//получаем заказы на отмену
+	// получаем сообщения, которые ещё не отправлены
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
-	// получаем сообщения, которые ещё не отправлены
 	// по каждому orders_id нам нужно только самое раннее не отправленное сообщение
 	query := pgBuilder.Select("distinct on(orders_id) orders_id", "id", "payload", "created_at").
 		From(outboxOrdersTable).

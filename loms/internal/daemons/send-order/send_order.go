@@ -48,7 +48,7 @@ func (c *sendOrderDaemon) RunSendDaemon(workersCount int, topic string) {
 	ticker := time.NewTicker(time.Second * 30)
 
 	// создаём функцию на обработку
-	// возвращаем id записи в БД
+	// возвращаем id записи в БД таблицы outbox
 	callback := func(orderMessage *sender.OrderMessage) *workerPool.Result[int64] {
 		log.Println("daemon: sending order")
 
@@ -62,7 +62,7 @@ func (c *sendOrderDaemon) RunSendDaemon(workersCount int, topic string) {
 			}
 		}
 
-		// возвращаем ключ. чтобы было понятно, что отправили
+		// возвращаем ключ, чтобы было понятно, что отправили
 		return &workerPool.Result[int64]{
 			Out:   orderMessage.OutboxKey,
 			Error: nil,

@@ -7,7 +7,7 @@ import (
 )
 
 func (s *service) MessageSent(ctx context.Context, id int64) error {
-	// получаем сообщения для отправки
+	// помечаем сообщение отправленным
 
 	err := s.repository.lomsRepository.MessageSent(ctx, id)
 	if err != nil {

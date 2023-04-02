@@ -3,14 +3,13 @@ package domain
 import (
 	"context"
 	"errors"
-	"testing"
-	"time"
-
 	"route256/libs/transactor"
 	transactorMock "route256/libs/transactor/mocks"
 	"route256/loms/internal/domain/model"
 	repository "route256/loms/internal/repository/postgres"
 	repositoryMock "route256/loms/internal/repository/postgres/mocks"
+	"testing"
+	"time"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/golang/mock/gomock"

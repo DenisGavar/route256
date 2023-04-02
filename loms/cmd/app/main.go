@@ -76,7 +76,7 @@ func main() {
 		config.ConfigData.Services.CancelOrderDaemon.WorkersCount,
 		time.Minute*time.Duration(config.ConfigData.Services.CancelOrderDaemon.CancelOrderTimeInMinutes))
 
-	// запускаем фоном отмену заказов
+	// создаём producer для kafka
 	producer, err := kafka.NewSyncProducer(config.ConfigData.Services.Kafka.Brokers)
 	if err != nil {
 		log.Fatalln(err)
@@ -87,6 +87,7 @@ func main() {
 		config.ConfigData.Services.Kafka.TopicForOrders,
 	)
 
+	// запускаем фоном отправку смены статусов заказов в kafka
 	sendOrderDaemon := sendOrder.NewSendOrderDaemon(businessLogic, orderSender)
 	go sendOrderDaemon.RunSendDaemon(
 		config.ConfigData.Services.Kafka.WorkersCount,

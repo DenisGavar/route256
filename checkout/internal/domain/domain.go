@@ -20,6 +20,7 @@ var (
 	ErrDeletingFromCart = errors.New("deleting from cart")
 	ErrCheckingStocks   = errors.New("checking stocks")
 	ErrAddingToCart     = errors.New("adding to cart")
+	ErrLimiter          = errors.New("limiter error")
 )
 
 type repo struct {

@@ -7,7 +7,7 @@ import (
 )
 
 func (r *repository) MessageSent(ctx context.Context, id int64) error {
-	// меняем статус сообщения
+	// помечаем сообщение отправленным
 
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 
