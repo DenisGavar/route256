@@ -3,14 +3,18 @@ package repository
 import (
 	"context"
 	"encoding/json"
+	"route256/libs/logger"
 	"route256/loms/internal/domain/model"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
+	"go.uber.org/zap"
 )
 
 func (r *repository) ChangeStatus(ctx context.Context, orderId int64, status string) error {
 	// меняем статус заказа
+	logger.Debug("loms repository", zap.String("handler", "ChangeStatus"), zap.Int64("orderId", orderId), zap.String("status", status))
+
 	changingStatusTime := time.Now()
 
 	db := r.queryEngineProvider.GetQueryEngine(ctx)

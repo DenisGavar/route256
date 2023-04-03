@@ -2,24 +2,27 @@ package main
 
 import (
 	"context"
-	"log"
 	"os"
 	"os/signal"
 	"route256/libs/kafka"
+	"route256/libs/logger"
 	configServices "route256/notifications/internal/config"
 	"sync"
 	"syscall"
 
 	"github.com/Shopify/sarama"
+	"go.uber.org/zap"
 )
 
 func main() {
+	logger.Init()
+
 	keepRunning := true
-	log.Println("Starting a new Sarama consumer")
+	logger.Info("Starting a new Sarama consumer")
 
 	err := configServices.Init()
 	if err != nil {
-		log.Fatal("config init", err)
+		logger.Fatal("config init", zap.Error(err))
 	}
 
 	config := sarama.NewConfig()
@@ -34,7 +37,7 @@ func main() {
 	case "range":
 		config.Consumer.Group.Rebalance.GroupStrategies = []sarama.BalanceStrategy{sarama.BalanceStrategyRange}
 	default:
-		log.Panicf("Unrecognized consumer group partition assignor: %s", configServices.ConfigData.Services.Kafka.BalanceStrategy)
+		logger.Fatal("Unrecognized consumer group partition assignor", zap.String("Balance strategy", configServices.ConfigData.Services.Kafka.BalanceStrategy))
 	}
 
 	consumer := kafka.NewConsumerGroup()
@@ -42,7 +45,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	client, err := sarama.NewConsumerGroup(configServices.ConfigData.Services.Kafka.Brokers, configServices.ConfigData.Services.Kafka.GroupName, config)
 	if err != nil {
-		log.Panicf("Error creating consumer group client: %v", err)
+		logger.Fatal("Error creating consumer group client", zap.Error(err))
 	}
 
 	consumptionIsPaused := false
@@ -52,7 +55,7 @@ func main() {
 		defer wg.Done()
 		for {
 			if err := client.Consume(ctx, []string{configServices.ConfigData.Services.Kafka.TopicForOrders}, &consumer); err != nil {
-				log.Panicf("Error from consumer: %v", err)
+				logger.Fatal("Error from consumer", zap.Error(err))
 			}
 
 			if ctx.Err() != nil {
@@ -62,7 +65,7 @@ func main() {
 	}()
 
 	<-consumer.Ready()
-	log.Println("Sarama consumer up and running!...")
+	logger.Info("Sarama consumer up and running!...")
 
 	sigusr1 := make(chan os.Signal, 1)
 	signal.Notify(sigusr1, syscall.Signal(0xa)) // syscall.SIGUSR1
@@ -73,10 +76,10 @@ func main() {
 	for keepRunning {
 		select {
 		case <-ctx.Done():
-			log.Println("terminating: context cancelled")
+			logger.Info("terminating: context cancelled")
 			keepRunning = false
 		case <-sigterm:
-			log.Println("terminating: via signal")
+			logger.Info("terminating: via signal")
 			keepRunning = false
 		case <-sigusr1:
 			toggleConsumptionFlow(client, &consumptionIsPaused)
@@ -86,17 +89,17 @@ func main() {
 	cancel()
 	wg.Wait()
 	if err = client.Close(); err != nil {
-		log.Panicf("Error closing client: %v", err)
+		logger.Fatal("Error closing client", zap.Error(err))
 	}
 }
 
 func toggleConsumptionFlow(client sarama.ConsumerGroup, isPaused *bool) {
 	if *isPaused {
 		client.ResumeAll()
-		log.Println("Resuming consumption")
+		logger.Info("Resuming consumption")
 	} else {
 		client.PauseAll()
-		log.Println("Pausing consumption")
+		logger.Info("Pausing consumption")
 	}
 
 	*isPaused = !*isPaused

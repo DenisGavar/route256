@@ -2,16 +2,21 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"route256/checkout/internal/converter"
 	"route256/checkout/internal/domain/model"
 	"route256/checkout/internal/repository/schema"
+	"route256/libs/logger"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/pgxscan"
+	"go.uber.org/zap"
 )
 
 func (r *repository) ListCart(ctx context.Context, listCartRequest *model.ListCartRequest) (*model.ListCartResponse, error) {
 	// получаем список товаров в корзине
+	logger.Debug("checkout repository", zap.String("handler", "ListCart"), zap.String("request", fmt.Sprintf("%+v", listCartRequest)))
+
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)

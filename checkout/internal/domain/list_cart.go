@@ -2,16 +2,21 @@ package domain
 
 import (
 	"context"
+	"fmt"
 	"route256/checkout/internal/domain/model"
 	product "route256/checkout/pkg/product-service_v1"
+	"route256/libs/logger"
 	workerPool "route256/libs/worker-pool"
 	"sync"
 
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
 
 func (s *service) ListCart(ctx context.Context, req *model.ListCartRequest) (*model.ListCartResponse, error) {
 	// получаем список товаров в корзине
+	logger.Debug("checkout domain", zap.String("handler", "ListCart"), zap.String("request", fmt.Sprintf("%+v", req)))
+
 	listCart, err := s.repository.checkoutRepository.ListCart(ctx, req)
 	if err != nil {
 		return nil, errors.WithMessage(err, ErrGettingListCart.Error())

@@ -32,6 +32,7 @@ type ProductService struct {
 type Checkout struct {
 	HTTPPort string `yaml:"httpPort"`
 	GRPCPort string `yaml:"grpcPort"`
+	DevMode  bool   `yaml:"devMode"`
 }
 
 type CheckoutPgBouncer struct {

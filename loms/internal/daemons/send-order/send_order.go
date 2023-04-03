@@ -2,13 +2,15 @@ package send_order
 
 import (
 	"context"
-	"log"
+	"fmt"
+	"route256/libs/logger"
 	workerPool "route256/libs/worker-pool"
 	"route256/loms/internal/domain/model"
 	"route256/loms/internal/sender"
 	"time"
 
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
 
 type SendOrderDaemon interface {
@@ -50,7 +52,7 @@ func (c *sendOrderDaemon) RunSendDaemon(workersCount int, topic string) {
 	// создаём функцию на обработку
 	// возвращаем id записи в БД таблицы outbox
 	callback := func(orderMessage *sender.OrderMessage) *workerPool.Result[int64] {
-		log.Println("daemon: sending order")
+		logger.Debug("daemon sending order", zap.String("request", fmt.Sprintf("%+v", orderMessage)))
 
 		// отправялем сообщение
 		err := c.orderSender.SendOrder(ctx, orderMessage)
@@ -85,12 +87,12 @@ func (c *sendOrderDaemon) RunSendDaemon(workersCount int, topic string) {
 		for result := range results {
 			if result.Error != nil {
 				// ошибку логируем
-				log.Println(result.Error)
+				logger.Error("daemon failed sending order", zap.Error(result.Error))
 			} else {
 				// помечаем в БД сообщение отправленным
 				err := c.messager.MessageSent(ctx, result.Out)
 				if err != nil {
-					log.Println(err)
+					logger.Error("daemon failed pointing message sent", zap.Error(result.Error))
 				}
 			}
 			// отмечаем, что задача выполнена, результат получен
@@ -104,11 +106,11 @@ func (c *sendOrderDaemon) RunSendDaemon(workersCount int, topic string) {
 		select {
 		case <-ticker.C:
 			// получаем сообщения для отправки
-			log.Println("checking messages to send")
+			logger.Debug("daemon checking messages to send")
 			messagesToSend, err := c.messager.MessagesToSend(ctx)
 			if err != nil {
 				// ошибку логируем
-				log.Println(err)
+				logger.Error("daemon failed checking messages to send", zap.Error(err))
 				break
 			}
 			for _, messageToSend := range messagesToSend {

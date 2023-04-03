@@ -2,18 +2,19 @@ package repository
 
 import (
 	"context"
-	"log"
+	"fmt"
+	"route256/libs/logger"
 	"route256/loms/internal/domain/model"
 	"route256/loms/internal/repository/schema"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/pgxscan"
+	"go.uber.org/zap"
 )
 
 func (r *repository) ReserveItems(ctx context.Context, orderId int64, req *model.ReserveStocksItem) error {
-	log.Printf("reserve: %+v", req)
-
 	// резервируем товары на складах
+	logger.Debug("loms repository", zap.String("handler", "ReserveItems"), zap.Int64("orderId", orderId), zap.String("request", fmt.Sprintf("%+v", req)))
 
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 

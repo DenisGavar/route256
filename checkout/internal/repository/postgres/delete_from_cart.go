@@ -2,15 +2,20 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"route256/checkout/internal/domain/model"
 	"route256/checkout/internal/repository/schema"
+	"route256/libs/logger"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/pgxscan"
+	"go.uber.org/zap"
 )
 
 func (r *repository) DeleteFromCart(ctx context.Context, deleteFromCartRequest *model.DeleteFromCartRequest) error {
 	// убираем товары из корзины
+	logger.Debug("checkout repository", zap.String("handler", "DeleteFromCart"), zap.String("request", fmt.Sprintf("%+v", deleteFromCartRequest)))
+
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)

@@ -2,15 +2,21 @@ package repository
 
 import (
 	"context"
+	"fmt"
+	"route256/libs/logger"
 	"route256/loms/internal/converter"
 	"route256/loms/internal/domain/model"
 	"route256/loms/internal/repository/schema"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/pgxscan"
+	"go.uber.org/zap"
 )
 
 func (r *repository) ListOrder(ctx context.Context, req *model.ListOrderRequest) (*model.ListOrderResponse, error) {
+	// получаем заказ
+	logger.Debug("loms repository", zap.String("handler", "ListOrder"), zap.String("request", fmt.Sprintf("%+v", req)))
+
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)

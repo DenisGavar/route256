@@ -2,13 +2,17 @@ package domain
 
 import (
 	"context"
+	"fmt"
+	"route256/libs/logger"
 	"route256/loms/internal/domain/model"
 
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
 
 func (s *service) CancelOrder(ctx context.Context, req *model.CancelOrderRequest) error {
 	// отменяем заказ
+	logger.Debug("loms domain", zap.String("handler", "CancelOrder"), zap.String("request", fmt.Sprintf("%+v", req)))	
 
 	err := s.repository.transactionManager.RunRepeatableRead(ctx, func(ctxTX context.Context) error {
 		// получаем резервы, которые надо вернуть на склад

@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"net"
 	"route256/libs/kafka"
+	"route256/libs/logger"
 	"route256/libs/transactor"
 	lomsV1 "route256/loms/internal/api/loms_v1"
 	"route256/loms/internal/config"
@@ -18,19 +18,22 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v4/pgxpool"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
 func main() {
+	logger.Init()
+
 	err := config.Init()
 	if err != nil {
-		log.Fatal("config init", err)
+		logger.Fatal("config init", zap.Error(err))
 	}
 
 	lis, err := net.Listen("tcp", config.ConfigData.Services.Loms.Port)
 	if err != nil {
-		log.Fatal("failed to listen", err)
+		logger.Fatal("failed to listen grpc", zap.Error(err))
 	}
 
 	s := grpc.NewServer()
@@ -50,7 +53,7 @@ func main() {
 	// пул соединений
 	pool, err := pgxpool.Connect(ctx, psqlConn)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal("failed to creating pgxpool connection", zap.Error(err))
 	}
 	defer pool.Close()
 
@@ -79,7 +82,7 @@ func main() {
 	// создаём producer для kafka
 	producer, err := kafka.NewSyncProducer(config.ConfigData.Services.Kafka.Brokers)
 	if err != nil {
-		log.Fatalln(err)
+		logger.Fatal("failed to creating kafka producer", zap.Error(err))
 	}
 
 	orderSender := sender.NewOrderSender(
@@ -93,9 +96,9 @@ func main() {
 		config.ConfigData.Services.Kafka.WorkersCount,
 		config.ConfigData.Services.Kafka.TopicForOrders)
 
-	log.Println("grpc server at", config.ConfigData.Services.Loms.Port)
+	logger.Info("grpc server at", zap.String("port", config.ConfigData.Services.Loms.Port))
 
 	if err := s.Serve(lis); err != nil {
-		log.Fatal("failed to serve", err)
+		logger.Fatal("failed to serve grpc server", zap.Error(err))
 	}
 }

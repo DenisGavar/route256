@@ -2,15 +2,21 @@ package repository
 
 import (
 	"context"
+	"fmt"
+	"route256/libs/logger"
 	"route256/loms/internal/domain/model"
 	"route256/loms/internal/repository/schema"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/pgxscan"
+	"go.uber.org/zap"
 )
 
 func (r *repository) CreateOrder(ctx context.Context, req *model.CreateOrderRequest) (*model.CreateOrderResponse, error) {
+	// создаём заказ
+	logger.Debug("loms repository", zap.String("handler", "CreateOrder"), zap.String("request", fmt.Sprintf("%+v", req)))
+
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
