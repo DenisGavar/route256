@@ -6,6 +6,7 @@ import (
 	"route256/libs/logger"
 	"route256/loms/internal/domain/model"
 
+	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
@@ -13,6 +14,11 @@ import (
 func (s *service) CreateOrder(ctx context.Context, req *model.CreateOrderRequest) (*model.CreateOrderResponse, error) {
 	// создаём заказ, получаем его id
 	logger.Debug("loms domain", zap.String("handler", "CreateOrder"), zap.String("request", fmt.Sprintf("%+v", req)))
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "loms domain CreateOrder processing")
+	defer span.Finish()
+
+	span.SetTag("user", req.User)
 
 	response, err := s.repository.lomsRepository.CreateOrder(ctx, req)
 	if err != nil {

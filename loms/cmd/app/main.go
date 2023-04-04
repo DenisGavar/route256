@@ -6,6 +6,7 @@ import (
 	"net"
 	"route256/libs/kafka"
 	"route256/libs/logger"
+	"route256/libs/tracing"
 	"route256/libs/transactor"
 	lomsV1 "route256/loms/internal/api/loms_v1"
 	"route256/loms/internal/config"
@@ -17,9 +18,12 @@ import (
 	desc "route256/loms/pkg/loms_v1"
 	"time"
 
+	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 )
 
@@ -31,12 +35,19 @@ func main() {
 		logger.Fatal("config init", zap.Error(err))
 	}
 
+	tracing.Init(logger.GetLogger(), config.ConfigData.Services.Loms.Name)
+
 	lis, err := net.Listen("tcp", config.ConfigData.Services.Loms.Port)
 	if err != nil {
 		logger.Fatal("failed to listen grpc", zap.Error(err))
 	}
 
-	s := grpc.NewServer()
+	s := grpc.NewServer(
+		grpc.Creds(insecure.NewCredentials()),
+		grpc.UnaryInterceptor(
+			otgrpc.OpenTracingServerInterceptor(opentracing.GlobalTracer()),
+		),
+	)
 	reflection.Register(s)
 
 	// подключаемся к БД

@@ -5,12 +5,18 @@ import (
 	"route256/libs/logger"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
 
 func (r *repository) ClearReserves(ctx context.Context, orderId int64) error {
 	// убираем товары из резерва
 	logger.Debug("loms repository", zap.String("handler", "ClearReserves"), zap.Int64("orderId", orderId))
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "loms repository ClearReserves processing")
+	defer span.Finish()
+
+	span.SetTag("order_id", orderId)
 
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 

@@ -6,13 +6,19 @@ import (
 	"route256/libs/logger"
 	"route256/loms/internal/domain/model"
 
+	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
 func (s *service) CancelOrder(ctx context.Context, req *model.CancelOrderRequest) error {
 	// отменяем заказ
-	logger.Debug("loms domain", zap.String("handler", "CancelOrder"), zap.String("request", fmt.Sprintf("%+v", req)))	
+	logger.Debug("loms domain", zap.String("handler", "CancelOrder"), zap.String("request", fmt.Sprintf("%+v", req)))
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "loms domain CancelOrder processing")
+	defer span.Finish()
+
+	span.SetTag("order_id", req.OrderId)
 
 	err := s.repository.transactionManager.RunRepeatableRead(ctx, func(ctxTX context.Context) error {
 		// получаем резервы, которые надо вернуть на склад

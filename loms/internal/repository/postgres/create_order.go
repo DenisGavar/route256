@@ -10,12 +10,18 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/pgxscan"
+	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
 
 func (r *repository) CreateOrder(ctx context.Context, req *model.CreateOrderRequest) (*model.CreateOrderResponse, error) {
 	// создаём заказ
 	logger.Debug("loms repository", zap.String("handler", "CreateOrder"), zap.String("request", fmt.Sprintf("%+v", req)))
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "loms repository CreateOrder processing")
+	defer span.Finish()
+
+	span.SetTag("user", req.User)
 
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 

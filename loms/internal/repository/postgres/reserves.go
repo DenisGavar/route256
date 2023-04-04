@@ -9,12 +9,18 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/pgxscan"
+	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
 
 func (r *repository) Reserves(ctx context.Context, orderId int64) (*model.Reserve, error) {
 	// получаем резервы
 	logger.Debug("loms repository", zap.String("handler", "Reserves"), zap.Int64("orderId", orderId))
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "loms repository Reserves processing")
+	defer span.Finish()
+
+	span.SetTag("order_id", orderId)
 
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 

@@ -57,13 +57,20 @@ services:
     container_name: 'checkout'
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgres://user:password@pgbouncer-checkout:6433/checkout?sslmode=disable
+      - DATABASE_URL=postgres://user:password@pgbouncer-checkout:6433/checkout?sslmode=disable
+      - JAEGER_SERVICE_NAME=checkout
+      - JAEGER_AGENT_HOST=jaeger
+      - JAEGER_AGENT_PORT=6831     
+      - JAEGER_SAMPLER_MANAGER_HOST_PORT=jaeger:5778
+      - JAEGER_SAMPLER_TYPE=const
+      - JAEGER_SAMPLER_PARAM=1      
     ports:
       - "8080:8080"
       - "8090:8090"
     depends_on:
       - postgres-checkout
       - pgbouncer-checkout
+      - jaeger
     networks:
       - net
 
@@ -115,7 +122,13 @@ services:
     container_name: 'loms'
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgres://user:password@pgbouncer-loms:6432/loms?sslmode=disable
+      - DATABASE_URL=postgres://user:password@pgbouncer-loms:6432/loms?sslmode=disable
+      - JAEGER_SERVICE_NAME=loms
+      - JAEGER_AGENT_HOST=jaeger
+      - JAEGER_AGENT_PORT=6831     
+      - JAEGER_SAMPLER_MANAGER_HOST_PORT=jaeger:5778
+      - JAEGER_SAMPLER_TYPE=const
+      - JAEGER_SAMPLER_PARAM=1
     ports:
       - "8081:8081"
     depends_on:
@@ -124,6 +137,7 @@ services:
       - kafka1
       - kafka2
       - kafka3
+      - jaeger
     networks:
       - net
 
@@ -245,4 +259,21 @@ services:
       echo -e 'Successfully created the following topics:'
       kafka-topics --bootstrap-server kafka1:29091 --list
       "
+
+  # jaeger
+  jaeger:
+    image: jaegertracing/all-in-one:1.18
+    ports:
+      - 5775:5775/udp
+      - 6831:6831/udp
+      - 6832:6832/udp
+      - 5778:5778
+      - 16686:16686 # web
+      - 14268:14268
+      - 9411:9411
+    labels:
+      NAME: "jaeger"
+    networks:
+      - net
+
 

@@ -8,12 +8,19 @@ import (
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
 
 func (r *repository) ChangeStatus(ctx context.Context, orderId int64, status string) error {
 	// меняем статус заказа
 	logger.Debug("loms repository", zap.String("handler", "ChangeStatus"), zap.Int64("orderId", orderId), zap.String("status", status))
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "loms repository ChangeStatus processing")
+	defer span.Finish()
+
+	span.SetTag("order_id", orderId)
+	span.SetTag("status", status)
 
 	changingStatusTime := time.Now()
 

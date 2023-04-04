@@ -15,13 +15,16 @@ import (
 	desc "route256/checkout/pkg/checkout_v1"
 	"route256/libs/limiter"
 	"route256/libs/logger"
+	"route256/libs/tracing"
 	"route256/libs/transactor"
 	workerPool "route256/libs/worker-pool"
 	"sync"
 	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -35,6 +38,8 @@ func main() {
 	if err != nil {
 		logger.Fatal("config init", zap.Error(err))
 	}
+
+	tracing.Init(logger.GetLogger(), config.ConfigData.Services.Checkout.Name)
 
 	ctx := context.Background()
 
@@ -69,11 +74,20 @@ func runGRPC() error {
 		return err
 	}
 
-	s := grpc.NewServer()
+	s := grpc.NewServer(
+		grpc.Creds(insecure.NewCredentials()),
+		grpc.UnaryInterceptor(
+			otgrpc.OpenTracingServerInterceptor(opentracing.GlobalTracer()),
+		),
+	)
 	reflection.Register(s)
 
 	// создаём клиентов
-	lomsConn, err := grpc.Dial(config.ConfigData.Services.Loms.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	lomsConn, err := grpc.Dial(
+		config.ConfigData.Services.Loms.Address,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())),
+	)
 	if err != nil {
 		logger.Error("failed to creating client loms", zap.String("address", config.ConfigData.Services.Loms.Address))
 		return err
@@ -81,7 +95,11 @@ func runGRPC() error {
 	defer lomsConn.Close()
 	lomsClient := loms.New(lomsConn)
 
-	productServiceConn, err := grpc.Dial(config.ConfigData.Services.ProductService.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	productServiceConn, err := grpc.Dial(
+		config.ConfigData.Services.ProductService.Address,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUnaryInterceptor(otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())),
+	)
 	if err != nil {
 		logger.Error("failed to creating client product service", zap.String("address", config.ConfigData.Services.ProductService.Address))
 		return err

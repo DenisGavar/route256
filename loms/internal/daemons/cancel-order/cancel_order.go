@@ -8,6 +8,7 @@ import (
 	"route256/loms/internal/domain/model"
 	"time"
 
+	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
@@ -46,6 +47,11 @@ func (c *cancelOrderDaemon) RunCancelDaemon(workersCount int, cancelOrderTime ti
 	// создаём функцию на обработку
 	callback := func(cancelOrderRequest *model.CancelOrderRequest) *workerPool.Result[*model.CancelOrderRequest] {
 		logger.Debug("daemon canceling order", zap.String("request", fmt.Sprintf("%+v", cancelOrderRequest)))
+
+		span, ctx := opentracing.StartSpanFromContext(ctx, "daemon canceling order processing")
+		defer span.Finish()
+
+		span.SetTag("order_id", cancelOrderRequest.OrderId)
 
 		err := c.orderCanceler.CancelOrder(ctx, cancelOrderRequest)
 		if err != nil {
@@ -93,6 +99,9 @@ func (c *cancelOrderDaemon) RunCancelDaemon(workersCount int, cancelOrderTime ti
 		case <-ticker.C:
 			// получаем заказы на отмену, передаём время, с которого заказы надо отменять
 			logger.Debug("daemon checking orders to cancel")
+
+			span, ctx := opentracing.StartSpanFromContext(ctx, "daemon checking orders to cancel processing")
+
 			ordersToCancel, err := c.orderCanceler.OrdersToCancel(ctx, time.Now().Add(-cancelOrderTime))
 			if err != nil {
 				// ошибку логируем
@@ -107,6 +116,7 @@ func (c *cancelOrderDaemon) RunCancelDaemon(workersCount int, cancelOrderTime ti
 					Results:  results,
 				})
 			}
+			span.Finish()
 		case <-ctx.Done():
 			// вышли по отмене контекста
 			return

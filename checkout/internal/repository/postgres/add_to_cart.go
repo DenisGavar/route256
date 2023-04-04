@@ -7,12 +7,19 @@ import (
 	"route256/libs/logger"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
 
 func (r *repository) AddToCart(ctx context.Context, addToCartRequest *model.AddToCartRequest) error {
 	// добавляем товары в корзину
 	logger.Debug("checkout repository", zap.String("handler", "AddToCart"), zap.String("request", fmt.Sprintf("%+v", addToCartRequest)))
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "checkout repository AddToCart processing")
+	defer span.Finish()
+
+	span.SetTag("user", addToCartRequest.User)
+	span.SetTag("sku", addToCartRequest.Sku)
 
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 

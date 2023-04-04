@@ -9,12 +9,19 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/pgxscan"
+	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
 
 func (r *repository) DeleteFromCart(ctx context.Context, deleteFromCartRequest *model.DeleteFromCartRequest) error {
 	// убираем товары из корзины
 	logger.Debug("checkout repository", zap.String("handler", "DeleteFromCart"), zap.String("request", fmt.Sprintf("%+v", deleteFromCartRequest)))
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "checkout repository DeleteFromCart processing")
+	defer span.Finish()
+
+	span.SetTag("user", deleteFromCartRequest.User)
+	span.SetTag("sku", deleteFromCartRequest.Sku)
 
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 

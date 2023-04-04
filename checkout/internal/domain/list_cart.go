@@ -9,6 +9,7 @@ import (
 	workerPool "route256/libs/worker-pool"
 	"sync"
 
+	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
@@ -16,6 +17,11 @@ import (
 func (s *service) ListCart(ctx context.Context, req *model.ListCartRequest) (*model.ListCartResponse, error) {
 	// получаем список товаров в корзине
 	logger.Debug("checkout domain", zap.String("handler", "ListCart"), zap.String("request", fmt.Sprintf("%+v", req)))
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "checkout domain ListCart processing")
+	defer span.Finish()
+
+	span.SetTag("user", req.User)
 
 	listCart, err := s.repository.checkoutRepository.ListCart(ctx, req)
 	if err != nil {

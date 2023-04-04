@@ -9,12 +9,16 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/pgxscan"
+	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
 
 func (r *repository) MessagesToSend(ctx context.Context) ([]*model.OrderMessage, error) {
 	// получаем сообщения, которые ещё не отправлены
 	logger.Debug("loms repository", zap.String("handler", "MessagesToSend"))
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "loms repository MessagesToSend processing")
+	defer span.Finish()
 
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 

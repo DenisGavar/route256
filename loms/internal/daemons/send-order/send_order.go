@@ -9,6 +9,7 @@ import (
 	"route256/loms/internal/sender"
 	"time"
 
+	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
@@ -53,6 +54,12 @@ func (c *sendOrderDaemon) RunSendDaemon(workersCount int, topic string) {
 	// возвращаем id записи в БД таблицы outbox
 	callback := func(orderMessage *sender.OrderMessage) *workerPool.Result[int64] {
 		logger.Debug("daemon sending order", zap.String("request", fmt.Sprintf("%+v", orderMessage)))
+
+		span, ctx := opentracing.StartSpanFromContext(ctx, "daemon sending order processing")
+		defer span.Finish()
+
+		span.SetTag("outbox_key", orderMessage.OutboxKey)
+		span.SetTag("key", orderMessage.Key)
 
 		// отправялем сообщение
 		err := c.orderSender.SendOrder(ctx, orderMessage)
@@ -107,6 +114,9 @@ func (c *sendOrderDaemon) RunSendDaemon(workersCount int, topic string) {
 		case <-ticker.C:
 			// получаем сообщения для отправки
 			logger.Debug("daemon checking messages to send")
+
+			span, ctx := opentracing.StartSpanFromContext(ctx, "daemon checking messages to send processing")
+
 			messagesToSend, err := c.messager.MessagesToSend(ctx)
 			if err != nil {
 				// ошибку логируем
@@ -127,6 +137,7 @@ func (c *sendOrderDaemon) RunSendDaemon(workersCount int, topic string) {
 					Results: results,
 				})
 			}
+			span.Finish()
 		case <-ctx.Done():
 			// вышли по отмене контекста
 			return

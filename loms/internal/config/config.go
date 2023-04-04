@@ -19,6 +19,7 @@ type Services struct {
 }
 
 type Loms struct {
+	Name string `yaml:"name"`
 	Port string `yaml:"port"`
 }
 
