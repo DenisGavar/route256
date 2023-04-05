@@ -22,10 +22,6 @@ func main() {
 		log.Fatal("config init", err)
 	}
 
-	/**
-	 * Construct a new Sarama configuration.
-	 * The Kafka cluster version has to be defined before the consumer/producer is initialized.
-	 */
 	config := sarama.NewConfig()
 	config.Version = sarama.MaxVersion
 	config.Consumer.Offsets.Initial = sarama.OffsetOldest
@@ -41,9 +37,6 @@ func main() {
 		log.Panicf("Unrecognized consumer group partition assignor: %s", configServices.ConfigData.Services.Kafka.BalanceStrategy)
 	}
 
-	/**
-	 * Setup a new Sarama consumer group
-	 */
 	consumer := kafka.NewConsumerGroup()
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -58,20 +51,17 @@ func main() {
 	go func() {
 		defer wg.Done()
 		for {
-			// `Consume` should be called inside an infinite loop, when a
-			// server-side rebalance happens, the consumer session will need to be
-			// recreated to get the new claims
 			if err := client.Consume(ctx, []string{configServices.ConfigData.Services.Kafka.TopicForOrders}, &consumer); err != nil {
 				log.Panicf("Error from consumer: %v", err)
 			}
-			// check if context was cancelled, signaling that the consumer should stop
+
 			if ctx.Err() != nil {
 				return
 			}
 		}
 	}()
 
-	<-consumer.Ready() // Await till the consumer has been set up
+	<-consumer.Ready()
 	log.Println("Sarama consumer up and running!...")
 
 	sigusr1 := make(chan os.Signal, 1)
