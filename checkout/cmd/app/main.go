@@ -15,6 +15,7 @@ import (
 	desc "route256/checkout/pkg/checkout_v1"
 	"route256/libs/limiter"
 	"route256/libs/logger"
+	"route256/libs/metrics"
 	"route256/libs/tracing"
 	"route256/libs/transactor"
 	workerPool "route256/libs/worker-pool"
@@ -44,7 +45,7 @@ func main() {
 	ctx := context.Background()
 
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(3)
 
 	go func() {
 		defer wg.Done()
@@ -64,6 +65,15 @@ func main() {
 		}
 	}()
 
+	go func() {
+		defer wg.Done()
+
+		err := runHTTPPrometheus(ctx)
+		if err != nil {
+			logger.Fatal("running HTTP prometheus", zap.Error(err))
+		}
+	}()
+
 	wg.Wait()
 }
 
@@ -73,11 +83,13 @@ func runGRPC() error {
 		logger.Error("failed to listen grpc", zap.String("port", config.ConfigData.Services.Checkout.GRPCPort))
 		return err
 	}
+	defer lis.Close()
 
 	s := grpc.NewServer(
 		grpc.Creds(insecure.NewCredentials()),
-		grpc.UnaryInterceptor(
+		grpc.ChainUnaryInterceptor(
 			otgrpc.OpenTracingServerInterceptor(opentracing.GlobalTracer()),
+			metrics.UnaryServerInterceptor,
 		),
 	)
 	reflection.Register(s)
@@ -180,4 +192,11 @@ func runHTTP(ctx context.Context) error {
 	logger.Info("http served at", zap.String("port", config.ConfigData.Services.Checkout.HTTPPort))
 
 	return http.ListenAndServe(config.ConfigData.Services.Checkout.HTTPPort, mux)
+}
+
+func runHTTPPrometheus(ctx context.Context) error {
+
+	http.Handle("/metrics", metrics.New())
+
+	return http.ListenAndServe(":8070", nil)
 }
