@@ -18,4 +18,4 @@ scrape_configs:
   - job_name: "loms"
     static_configs:
       - targets: 
-        - "loms:8081"
+        - "loms:8071"

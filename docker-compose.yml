@@ -132,6 +132,7 @@ services:
       - JAEGER_SAMPLER_PARAM=1
     ports:
       - "8081:8081"
+      - "8071:8071"
     depends_on:
       - postgres-loms
       - pgbouncer-loms

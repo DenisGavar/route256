@@ -2,6 +2,7 @@ services:
   loms:
     name: ""
     port: ""
+    prometheusPort: ""
   cancelOrderDaemon:
     workersCount: 
     cancelOrderTimeInMinutes:     

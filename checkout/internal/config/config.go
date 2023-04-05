@@ -30,9 +30,10 @@ type ProductService struct {
 }
 
 type Checkout struct {
-	Name     string `yaml:"name"`
-	HTTPPort string `yaml:"httpPort"`
-	GRPCPort string `yaml:"grpcPort"`
+	Name           string `yaml:"name"`
+	HTTPPort       string `yaml:"httpPort"`
+	GRPCPort       string `yaml:"grpcPort"`
+	PrometheusPort string `yaml:"prometheusPort"`
 }
 
 type CheckoutPgBouncer struct {

@@ -10,6 +10,7 @@ services:
     name: ""
     httpPort: ""
     grpcPort: ""
+    prometheusPort: ""
   checkoutPgBouncer:
     host: ""
     port: ""

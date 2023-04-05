@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"net/http"
 	"route256/libs/kafka"
 	"route256/libs/logger"
+	"route256/libs/metrics"
 	"route256/libs/tracing"
 	"route256/libs/transactor"
 	lomsV1 "route256/loms/internal/api/loms_v1"
@@ -16,6 +18,7 @@ import (
 	repository "route256/loms/internal/repository/postgres"
 	"route256/loms/internal/sender"
 	desc "route256/loms/pkg/loms_v1"
+	"sync"
 	"time"
 
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
@@ -37,15 +40,44 @@ func main() {
 
 	tracing.Init(logger.GetLogger(), config.ConfigData.Services.Loms.Name)
 
+	ctx := context.Background()
+
+	var wg sync.WaitGroup
+	wg.Add(3)
+
+	go func() {
+		defer wg.Done()
+
+		err := runGRPC()
+		if err != nil {
+			logger.Fatal("running GRPC", zap.Error(err))
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		err := runHTTPPrometheus(ctx)
+		if err != nil {
+			logger.Fatal("running HTTP prometheus", zap.Error(err))
+		}
+	}()
+
+	wg.Wait()
+}
+
+func runGRPC() error {
 	lis, err := net.Listen("tcp", config.ConfigData.Services.Loms.Port)
 	if err != nil {
 		logger.Fatal("failed to listen grpc", zap.Error(err))
+		return err
 	}
 
 	s := grpc.NewServer(
 		grpc.Creds(insecure.NewCredentials()),
-		grpc.UnaryInterceptor(
+		grpc.ChainUnaryInterceptor(
 			otgrpc.OpenTracingServerInterceptor(opentracing.GlobalTracer()),
+			metrics.UnaryServerInterceptor,
 		),
 	)
 	reflection.Register(s)
@@ -65,6 +97,7 @@ func main() {
 	pool, err := pgxpool.Connect(ctx, psqlConn)
 	if err != nil {
 		logger.Fatal("failed to creating pgxpool connection", zap.Error(err))
+		return err
 	}
 	defer pool.Close()
 
@@ -94,6 +127,7 @@ func main() {
 	producer, err := kafka.NewSyncProducer(config.ConfigData.Services.Kafka.Brokers)
 	if err != nil {
 		logger.Fatal("failed to creating kafka producer", zap.Error(err))
+		return err
 	}
 
 	orderSender := sender.NewOrderSender(
@@ -111,5 +145,13 @@ func main() {
 
 	if err := s.Serve(lis); err != nil {
 		logger.Fatal("failed to serve grpc server", zap.Error(err))
+		return err
 	}
+
+	return nil
+}
+
+func runHTTPPrometheus(ctx context.Context) error {
+	http.Handle("/metrics", metrics.New())
+	return http.ListenAndServe(config.ConfigData.Services.Loms.PrometheusPort, nil)
 }

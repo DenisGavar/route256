@@ -98,7 +98,10 @@ func runGRPC() error {
 	lomsConn, err := grpc.Dial(
 		config.ConfigData.Services.Loms.Address,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUnaryInterceptor(otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())),
+		grpc.WithChainUnaryInterceptor(
+			otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer()),
+			metrics.UnaryClientInterceptor,
+		),
 	)
 	if err != nil {
 		logger.Error("failed to creating client loms", zap.String("address", config.ConfigData.Services.Loms.Address))
@@ -110,7 +113,10 @@ func runGRPC() error {
 	productServiceConn, err := grpc.Dial(
 		config.ConfigData.Services.ProductService.Address,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUnaryInterceptor(otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer())),
+		grpc.WithChainUnaryInterceptor(
+			otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer()),
+			metrics.UnaryClientInterceptor,
+		),
 	)
 	if err != nil {
 		logger.Error("failed to creating client product service", zap.String("address", config.ConfigData.Services.ProductService.Address))
@@ -142,6 +148,7 @@ func runGRPC() error {
 	pool, err := pgxpool.Connect(ctx, psqlConn)
 	if err != nil {
 		logger.Fatal("failed to creating pgxpool connection", zap.Error(err))
+		return err
 	}
 	defer pool.Close()
 
@@ -195,8 +202,6 @@ func runHTTP(ctx context.Context) error {
 }
 
 func runHTTPPrometheus(ctx context.Context) error {
-
 	http.Handle("/metrics", metrics.New())
-
-	return http.ListenAndServe(":8070", nil)
+	return http.ListenAndServe(config.ConfigData.Services.Checkout.PrometheusPort, nil)
 }
