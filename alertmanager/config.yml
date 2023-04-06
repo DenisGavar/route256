@@ -1,0 +1,10 @@
+route:
+  receiver: 'alertmanager-telegram-bot'
+
+receivers:
+- name: 'alertmanager-telegram-bot'
+  telegram_configs:
+  - bot_token: 6111028424:AAHcyLfnLOqi1YGwzouZ0qn_dfkBwgRCw-A
+    api_url: 'https://api.telegram.org'
+    chat_id: -850995041
+    parse_mode: ''

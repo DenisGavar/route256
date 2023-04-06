@@ -227,10 +227,10 @@ services:
     depends_on:
       - zookeeper
     ports:
-      - "9093:9093"
+      - "9094:9094"
     environment:
-      - KAFKA_LISTENERS=LISTENER_INT://kafka3:29093,LISTENER_EXT://0.0.0.0:9093
-      - KAFKA_ADVERTISED_LISTENERS=LISTENER_INT://kafka3:29093,LISTENER_EXT://localhost:9093
+      - KAFKA_LISTENERS=LISTENER_INT://kafka3:29094,LISTENER_EXT://0.0.0.0:9094
+      - KAFKA_ADVERTISED_LISTENERS=LISTENER_INT://kafka3:29094,LISTENER_EXT://localhost:9094
       - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=LISTENER_INT:PLAINTEXT,LISTENER_EXT:PLAINTEXT
       - KAFKA_INTER_BROKER_LISTENER_NAME=LISTENER_INT
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
@@ -284,12 +284,25 @@ services:
     ports:
       - 9090:9090
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./alerts.yml:/etc/prometheus/alerts.yml
+      - ./prometheus/:/etc/prometheus/
     # extra_hosts:
     #   - host.docker.internal:host-gateway
     networks:
       - net
+  # alertmanager
+  alertmanager:
+    image: prom/alertmanager
+    ports:
+      - 9093:9093
+    volumes:
+      - ./alertmanager/:/etc/alertmanager/
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+    networks:
+      - net
+
   # grafana
   grafana:
     image: grafana/grafana-oss
