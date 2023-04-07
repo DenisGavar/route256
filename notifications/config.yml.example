@@ -1,0 +1,11 @@
+services:
+  kafka:
+   balanceStrategy: ""
+    groupName:  ""
+    topicForOrders: ""
+    brokers:
+      - ""
+      - ""
+      - ""
+
+

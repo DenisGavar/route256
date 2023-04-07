@@ -20,6 +20,7 @@ var (
 	ErrDeletingFromCart = errors.New("deleting from cart")
 	ErrCheckingStocks   = errors.New("checking stocks")
 	ErrAddingToCart     = errors.New("adding to cart")
+	ErrLimiter          = errors.New("limiter error")
 )
 
 type repo struct {
@@ -37,8 +38,7 @@ func NewRepository(checkoutRepository repository.CheckoutRepository, transaction
 var _ Service = (*service)(nil)
 
 type productServiceSettings struct {
-	listCartWorkersCount int
-	limiter              limiter.Limiter
+	limiter limiter.Limiter
 }
 
 func NewProductServiceSettings(limiter limiter.Limiter) *productServiceSettings {

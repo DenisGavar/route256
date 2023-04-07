@@ -12,6 +12,7 @@ const (
 	ordersTable                 = "orders"
 	orderItemsTable             = "order_items"
 	itemsStocksReservationTable = "items_stocks_reservation"
+	outboxOrdersTable           = "outbox_orders"
 )
 
 type LomsRepository interface {
@@ -24,6 +25,8 @@ type LomsRepository interface {
 	ReserveItems(ctx context.Context, orderId int64, req *model.ReserveStocksItem) error
 	ChangeStatus(ctx context.Context, orderId int64, status string) error
 	OrdersToCancel(ctx context.Context, time time.Time) ([]*model.CancelOrderRequest, error)
+	MessagesToSend(ctx context.Context) ([]*model.OrderMessage, error)
+	MessageSent(ctx context.Context, id int64) error
 }
 
 type repository struct {

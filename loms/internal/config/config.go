@@ -15,6 +15,7 @@ type Services struct {
 	Loms              Loms              `yaml:"loms"`
 	LomsPgBouncer     LomsPgBouncer     `yaml:"lomsPgBouncer"`
 	CancelOrderDaemon CancelOrderDaemon `yaml:"cancelOrderDaemon"`
+	Kafka             Kafka             `yaml:"kafka"`
 }
 
 type Loms struct {
@@ -32,6 +33,12 @@ type LomsPgBouncer struct {
 	UserDB     string `yaml:"userDB"`
 	PasswordDB string `yaml:"passwordDB"`
 	NameDB     string `yaml:"nameDB"`
+}
+
+type Kafka struct {
+	WorkersCount   int      `yaml:"workersCount"`
+	TopicForOrders string   `yaml:"topicForOrders"`
+	Brokers        []string `yaml:"brokers"`
 }
 
 var ConfigData ConfigStruct

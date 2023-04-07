@@ -3,8 +3,6 @@ package domain
 import (
 	"context"
 	"errors"
-	"testing"
-
 	lomsClient "route256/checkout/internal/clients/grpc/loms"
 	lomsClientMock "route256/checkout/internal/clients/grpc/loms/mocks"
 	"route256/checkout/internal/domain/model"
@@ -13,6 +11,7 @@ import (
 	"route256/libs/transactor"
 	transactorMock "route256/libs/transactor/mocks"
 	loms "route256/loms/pkg/loms_v1"
+	"testing"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/golang/mock/gomock"

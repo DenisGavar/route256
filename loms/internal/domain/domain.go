@@ -19,6 +19,8 @@ var (
 	ErrReservingItems        = errors.New("reserving items")
 	ErrGettingListOrder      = errors.New("getting list order")
 	ErrGettingOrdersToCancel = errors.New("getting orders to cancel")
+	ErrGettingMessagesToSend = errors.New("getting messages to send")
+	ErrChangingMessageSent   = errors.New("changing message sent")
 )
 
 type repo struct {

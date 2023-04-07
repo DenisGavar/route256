@@ -1,5 +1,7 @@
 package model
 
+import "time"
+
 type CancelOrderRequest struct {
 	OrderId int64
 }
@@ -11,8 +13,8 @@ type CreateOrderRequest struct {
 }
 
 type OrderItem struct {
-	Sku   uint32
-	Count uint16
+	Sku   uint32 `json:"sku"`
+	Count uint16 `json:"count"`
 }
 
 type CreateOrderResponse struct {
@@ -34,9 +36,9 @@ const (
 )
 
 type ListOrderResponse struct {
-	Status string
-	User   int64
-	Items  []*OrderItem
+	Status string       `json:"status"`
+	User   int64        `json:"user"`
+	Items  []*OrderItem `json:"items"`
 }
 
 type OrderPayedRequest struct {
@@ -64,4 +66,11 @@ type ReserveStocksItem struct {
 
 type Reserve struct {
 	ReserveItems []*ReserveStocksItem
+}
+
+type OrderMessage struct {
+	Id        int64
+	OrderId   int64
+	Message   string
+	CreatedAt time.Time
 }
