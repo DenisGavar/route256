@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"route256/checkout/internal/domain/model"
 	"route256/libs/logger"
+	"route256/libs/metrics"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/opentracing/opentracing-go"
@@ -24,6 +25,8 @@ func (r *repository) AddToCart(ctx context.Context, addToCartRequest *model.AddT
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+
+	metrics.QueryCounter.WithLabelValues("insert", basketsTable).Inc()
 
 	query := pgBuilder.Insert(basketsTable).
 		Columns("user_id", "sku", "count").

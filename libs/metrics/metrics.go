@@ -36,6 +36,13 @@ var (
 	},
 		[]string{"full_method", "status"},
 	)
+	QueryCounter = promauto.NewCounterVec(prometheus.CounterOpts{
+		Namespace: "route256",
+		Subsystem: "postgres",
+		Name:      "query_total",
+	},
+		[]string{"operator", "table"},
+	)
 )
 
 func New() http.Handler {

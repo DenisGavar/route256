@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"route256/libs/logger"
+	"route256/libs/metrics"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/opentracing/opentracing-go"
@@ -21,6 +22,8 @@ func (r *repository) MessageSent(ctx context.Context, id int64) error {
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+
+	metrics.QueryCounter.WithLabelValues("update", outboxOrdersTable).Inc()
 
 	query := pgBuilder.Update(outboxOrdersTable).
 		Set("sent", true).

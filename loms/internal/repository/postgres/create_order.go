@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"route256/libs/logger"
+	"route256/libs/metrics"
 	"route256/loms/internal/domain/model"
 	"route256/loms/internal/repository/schema"
 	"time"
@@ -27,6 +28,8 @@ func (r *repository) CreateOrder(ctx context.Context, req *model.CreateOrderRequ
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
+	metrics.QueryCounter.WithLabelValues("insert", ordersTable).Inc()
+
 	// создаём заказ
 	query := pgBuilder.Insert(ordersTable).
 		Columns("user_id", "status", "created_at", "changed_at").
@@ -48,6 +51,8 @@ func (r *repository) CreateOrder(ctx context.Context, req *model.CreateOrderRequ
 	if err := pgxscan.ScanOne(&order, raws); err != nil {
 		return nil, err
 	}
+
+	metrics.QueryCounter.WithLabelValues("insert", orderItemsTable).Inc()
 
 	// создаём строки заказа
 	query = pgBuilder.Insert(orderItemsTable).

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	grpcWrapper "route256/libs/grpc-wrapper"
 	"route256/libs/kafka"
 	"route256/libs/logger"
 	"route256/libs/metrics"
@@ -21,13 +22,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -73,14 +69,8 @@ func runGRPC() error {
 		return err
 	}
 
-	s := grpc.NewServer(
-		grpc.Creds(insecure.NewCredentials()),
-		grpc.ChainUnaryInterceptor(
-			otgrpc.OpenTracingServerInterceptor(opentracing.GlobalTracer()),
-			metrics.UnaryServerInterceptor,
-		),
-	)
-	reflection.Register(s)
+	// создаём grpc server, обёрнутый метриками и базовыми трейсами
+	s := grpcWrapper.NewServer()
 
 	// подключаемся к БД
 	ctx, cacnel := context.WithCancel(context.Background())

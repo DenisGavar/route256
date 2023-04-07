@@ -7,6 +7,7 @@ import (
 	"route256/checkout/internal/domain/model"
 	"route256/checkout/internal/repository/schema"
 	"route256/libs/logger"
+	"route256/libs/metrics"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/pgxscan"
@@ -26,6 +27,8 @@ func (r *repository) ListCart(ctx context.Context, listCartRequest *model.ListCa
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+
+	metrics.QueryCounter.WithLabelValues("select", basketsTable).Inc()
 
 	query := pgBuilder.Select("sku", "sum(count) as count").
 		From(basketsTable).

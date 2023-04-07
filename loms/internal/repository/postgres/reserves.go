@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"route256/libs/logger"
+	"route256/libs/metrics"
 	"route256/loms/internal/converter"
 	"route256/loms/internal/domain/model"
 	"route256/loms/internal/repository/schema"
@@ -25,6 +26,8 @@ func (r *repository) Reserves(ctx context.Context, orderId int64) (*model.Reserv
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+
+	metrics.QueryCounter.WithLabelValues("select", itemsStocksReservationTable).Inc()
 
 	query := pgBuilder.Select("sku", "warehouse_id", "sum(count) as count").
 		From(itemsStocksReservationTable).

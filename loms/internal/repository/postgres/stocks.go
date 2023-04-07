@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"route256/libs/logger"
+	"route256/libs/metrics"
 	"route256/loms/internal/converter"
 	"route256/loms/internal/domain/model"
 	"route256/loms/internal/repository/schema"
@@ -26,6 +27,8 @@ func (r *repository) Stocks(ctx context.Context, stocksRequest *model.StocksRequ
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+
+	metrics.QueryCounter.WithLabelValues("select", itemsStocksTable).Inc()
 
 	query := pgBuilder.Select("warehouse_id", "sum(count) count").
 		From(itemsStocksTable).

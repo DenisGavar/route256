@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"route256/libs/logger"
+	"route256/libs/metrics"
 	"route256/loms/internal/converter"
 	"route256/loms/internal/domain/model"
 	"route256/loms/internal/repository/schema"
@@ -27,6 +28,8 @@ func (r *repository) ListOrder(ctx context.Context, req *model.ListOrderRequest)
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
+	metrics.QueryCounter.WithLabelValues("select", ordersTable).Inc()
+
 	// получаем заказ
 	query := pgBuilder.Select("user_id", "status").
 		From(ordersTable).
@@ -41,6 +44,8 @@ func (r *repository) ListOrder(ctx context.Context, req *model.ListOrderRequest)
 	if err := pgxscan.Get(ctx, db, &order, rawQuery, args...); err != nil {
 		return nil, err
 	}
+
+	metrics.QueryCounter.WithLabelValues("select", orderItemsTable).Inc()
 
 	// получаем сроки заказа
 	query = pgBuilder.Select("sku", "sum(count) as count").

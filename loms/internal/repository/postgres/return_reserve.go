@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"route256/libs/logger"
+	"route256/libs/metrics"
 	"route256/loms/internal/domain/model"
 
 	sq "github.com/Masterminds/squirrel"
@@ -24,6 +25,8 @@ func (r *repository) ReturnReserve(ctx context.Context, reserveStocksItem *model
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+
+	metrics.QueryCounter.WithLabelValues("insert", itemsStocksTable).Inc()
 
 	query := pgBuilder.Insert(itemsStocksTable).
 		Columns("sku", "warehouse_id", "count").

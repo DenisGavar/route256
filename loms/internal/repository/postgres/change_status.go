@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"route256/libs/logger"
+	"route256/libs/metrics"
 	"route256/loms/internal/domain/model"
 	"time"
 
@@ -27,6 +28,8 @@ func (r *repository) ChangeStatus(ctx context.Context, orderId int64, status str
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+
+	metrics.QueryCounter.WithLabelValues("update", ordersTable).Inc()
 
 	query := pgBuilder.Update(ordersTable).
 		Set("status", status).
@@ -57,6 +60,8 @@ func (r *repository) ChangeStatus(ctx context.Context, orderId int64, status str
 	if err != nil {
 		return err
 	}
+
+	metrics.QueryCounter.WithLabelValues("insert", outboxOrdersTable).Inc()
 
 	// сохраняем тело сообщения
 	queryInsert := pgBuilder.Insert(outboxOrdersTable).

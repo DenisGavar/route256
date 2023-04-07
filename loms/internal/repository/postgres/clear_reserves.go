@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"route256/libs/logger"
+	"route256/libs/metrics"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/opentracing/opentracing-go"
@@ -21,6 +22,8 @@ func (r *repository) ClearReserves(ctx context.Context, orderId int64) error {
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+
+	metrics.QueryCounter.WithLabelValues("delete", itemsStocksReservationTable).Inc()
 
 	query := pgBuilder.Delete(itemsStocksReservationTable).
 		Where("orders_id = ?", orderId)

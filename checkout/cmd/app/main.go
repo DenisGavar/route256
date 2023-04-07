@@ -13,6 +13,7 @@ import (
 	"route256/checkout/internal/domain/model"
 	repository "route256/checkout/internal/repository/postgres"
 	desc "route256/checkout/pkg/checkout_v1"
+	grpcWrapper "route256/libs/grpc-wrapper"
 	"route256/libs/limiter"
 	"route256/libs/logger"
 	"route256/libs/metrics"
@@ -23,13 +24,10 @@ import (
 	"time"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -85,45 +83,30 @@ func runGRPC() error {
 	}
 	defer lis.Close()
 
-	s := grpc.NewServer(
-		grpc.Creds(insecure.NewCredentials()),
-		grpc.ChainUnaryInterceptor(
-			otgrpc.OpenTracingServerInterceptor(opentracing.GlobalTracer()),
-			metrics.UnaryServerInterceptor,
-		),
-	)
-	reflection.Register(s)
+	// создаём grpc server, обёрнутый метриками и базовыми трейсами
+	s := grpcWrapper.NewServer()
 
-	// создаём клиентов
-	lomsConn, err := grpc.Dial(
+	// создаём grpc client, обёрнутый метриками и базовыми трейсами
+	lomsConn, err := grpcWrapper.Dial(
 		config.ConfigData.Services.Loms.Address,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithChainUnaryInterceptor(
-			otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer()),
-			metrics.UnaryClientInterceptor,
-		),
 	)
 	if err != nil {
 		logger.Error("failed to creating client loms", zap.String("address", config.ConfigData.Services.Loms.Address))
 		return err
 	}
 	defer lomsConn.Close()
-	lomsClient := loms.New(lomsConn)
+	lomsClient := loms.New(lomsConn.GetClientConn())
 
-	productServiceConn, err := grpc.Dial(
+	// создаём grpc client, обёрнутый метриками и базовыми трейсами
+	productServiceConn, err := grpcWrapper.Dial(
 		config.ConfigData.Services.ProductService.Address,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithChainUnaryInterceptor(
-			otgrpc.OpenTracingClientInterceptor(opentracing.GlobalTracer()),
-			metrics.UnaryClientInterceptor,
-		),
 	)
 	if err != nil {
 		logger.Error("failed to creating client product service", zap.String("address", config.ConfigData.Services.ProductService.Address))
 		return err
 	}
 	defer productServiceConn.Close()
-	productServiceClient := productService.New(productServiceConn, config.ConfigData.Services.ProductService.Token)
+	productServiceClient := productService.New(productServiceConn.GetClientConn(), config.ConfigData.Services.ProductService.Token)
 
 	rateLimit := config.ConfigData.Services.ProductService.RateLimit
 

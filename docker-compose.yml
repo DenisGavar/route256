@@ -285,8 +285,6 @@ services:
       - 9090:9090
     volumes:
       - ./prometheus/:/etc/prometheus/
-    # extra_hosts:
-    #   - host.docker.internal:host-gateway
     networks:
       - net
   # alertmanager

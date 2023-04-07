@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"route256/libs/logger"
+	"route256/libs/metrics"
 	"route256/loms/internal/converter"
 	"route256/loms/internal/domain/model"
 	"route256/loms/internal/repository/schema"
@@ -23,6 +24,8 @@ func (r *repository) MessagesToSend(ctx context.Context) ([]*model.OrderMessage,
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+
+	metrics.QueryCounter.WithLabelValues("select", outboxOrdersTable).Inc()
 
 	// по каждому orders_id нам нужно только самое раннее не отправленное сообщение
 	query := pgBuilder.Select("distinct on(orders_id) orders_id", "id", "payload", "created_at").
