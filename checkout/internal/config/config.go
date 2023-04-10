@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"time"
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
@@ -23,10 +24,12 @@ type Loms struct {
 }
 
 type ProductService struct {
-	Address              string `yaml:"address"`
-	Token                string `yaml:"token"`
-	ListCartWorkersCount int    `yaml:"listCartWorkersCount"`
-	RateLimit            int    `yaml:"rateLimit"`
+	Address              string        `yaml:"address"`
+	Token                string        `yaml:"token"`
+	ListCartWorkersCount int           `yaml:"listCartWorkersCount"`
+	RateLimit            int           `yaml:"rateLimit"`
+	CacheCapacity        int           `yaml:"cacheCapacity"`
+	CacheTTL             time.Duration `yaml:"cacheTTL"`
 }
 
 type Checkout struct {

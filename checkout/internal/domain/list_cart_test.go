@@ -9,6 +9,7 @@ import (
 	repository "route256/checkout/internal/repository/postgres"
 	repositoryMock "route256/checkout/internal/repository/postgres/mocks"
 	product "route256/checkout/pkg/product-service_v1"
+	"route256/libs/cache"
 	"route256/libs/limiter"
 	limiterMock "route256/libs/limiter/mocks"
 	"route256/libs/transactor"
@@ -176,10 +177,12 @@ func TestListCart(t *testing.T) {
 			)
 			wp.Init(ctx)
 
+			lruCache := cache.NewCache(1, 100)
+
 			repo := NewRepository(tt.checkoutRepositoryMock(mc), transactor.NewTransactionManager(dbMock))
 
 			productServiceSettings := NewProductServiceSettings(tt.limiterMock(mc))
-			productService := NewProductService(tt.productServiceClientMock(mc), productServiceSettings)
+			productService := NewProductService(tt.productServiceClientMock(mc), productServiceSettings, lruCache)
 
 			client := NewMockService(repo, productService, wp)
 

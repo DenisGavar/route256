@@ -7,6 +7,7 @@ import (
 	productServiceGRPCClient "route256/checkout/internal/clients/grpc/product-service"
 	"route256/checkout/internal/domain/model"
 	repository "route256/checkout/internal/repository/postgres"
+	"route256/libs/cache"
 	"route256/libs/limiter"
 	"route256/libs/transactor"
 	workerPool "route256/libs/worker-pool"
@@ -48,14 +49,16 @@ func NewProductServiceSettings(limiter limiter.Limiter) *productServiceSettings 
 }
 
 type productService struct {
-	productServiceClient   productServiceGRPCClient.ProductServiceClient
-	productServiceSettings *productServiceSettings
+	productServiceClient       productServiceGRPCClient.ProductServiceClient
+	productServiceSettings     *productServiceSettings
+	productServiceCachedClient cache.Cache
 }
 
-func NewProductService(productServiceClient productServiceGRPCClient.ProductServiceClient, productServiceSettings *productServiceSettings) *productService {
+func NewProductService(productServiceClient productServiceGRPCClient.ProductServiceClient, productServiceSettings *productServiceSettings, productServiceCachedClient cache.Cache) *productService {
 	return &productService{
-		productServiceClient:   productServiceClient,
-		productServiceSettings: productServiceSettings,
+		productServiceClient:       productServiceClient,
+		productServiceSettings:     productServiceSettings,
+		productServiceCachedClient: productServiceCachedClient,
 	}
 }
 

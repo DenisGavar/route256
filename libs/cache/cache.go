@@ -2,9 +2,15 @@ package cache
 
 import (
 	"container/list"
+	"context"
 	"sync"
 	"time"
 )
+
+type Cache interface {
+	Set(ctx context.Context, key string, value interface{}) bool
+	Get(ctx context.Context, key string) interface{}
+}
 
 // элемент кэша
 type cacheItem struct {
@@ -12,11 +18,6 @@ type cacheItem struct {
 	value interface{}
 
 	ttl *time.Time
-}
-
-type Cache interface {
-	Set(key string, value interface{}) bool
-	Get(key string) interface{}
 }
 
 // кэш
@@ -53,7 +54,7 @@ func NewCache(capacity int, ttl time.Duration) Cache {
 }
 
 // записываем значение в кэш
-func (c *cache) Set(key string, value interface{}) bool {
+func (c *cache) Set(ctx context.Context, key string, value interface{}) bool {
 	// блокировка
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -91,7 +92,7 @@ func (c *cache) Set(key string, value interface{}) bool {
 }
 
 // получаем значение из кэша
-func (c *cache) Get(key string) interface{} {
+func (c *cache) Get(ctx context.Context, key string) interface{} {
 	// блокировка
 	c.mu.Lock()
 	defer c.mu.Unlock()

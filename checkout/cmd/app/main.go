@@ -13,6 +13,7 @@ import (
 	"route256/checkout/internal/domain/model"
 	repository "route256/checkout/internal/repository/postgres"
 	desc "route256/checkout/pkg/checkout_v1"
+	"route256/libs/cache"
 	grpcWrapper "route256/libs/grpc-wrapper"
 	"route256/libs/limiter"
 	"route256/libs/logger"
@@ -114,7 +115,12 @@ func runGRPC() error {
 		limiter.NewLimiter(time.Second, rateLimit),
 	)
 
-	productService := domain.NewProductService(productServiceClient, productServiceSettings)
+	lruCache := cache.NewCache(
+		config.ConfigData.Services.ProductService.CacheCapacity,
+		config.ConfigData.Services.ProductService.CacheTTL,
+	)
+
+	productService := domain.NewProductService(productServiceClient, productServiceSettings, lruCache)
 
 	// подключаемся к БД
 	ctx, cacnel := context.WithCancel(context.Background())

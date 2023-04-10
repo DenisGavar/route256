@@ -6,6 +6,8 @@ services:
     token: ""
     listCartWorkersCount: 
     rateLimit: 
+    cacheCapacity: 
+    cacheTTL: 
   checkout:
     name: ""
     httpPort: ""
