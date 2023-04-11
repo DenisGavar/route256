@@ -1,7 +1,8 @@
 package product_service_cached
 
 import (
-	productServiceGRPCClient "route256/checkout/internal/clients/grpc/product-service"
+	"context"
+	product "route256/checkout/pkg/product-service_v1"
 	"route256/libs/cache"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -12,36 +13,46 @@ var (
 	cacheHitsTotal = promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: "route256",
 		Subsystem: "cache",
-		Name:      "cache_hits_total",
+		Name:      "hits_total",
 	},
 	)
 
 	cacheErrorsTotal = promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: "route256",
 		Subsystem: "cache",
-		Name:      "cache_errors_total",
+		Name:      "errors_total",
 	},
 	)
 
 	cacheRequestsTotal = promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: "route256",
 		Subsystem: "cache",
-		Name:      "cache_requests_total",
+		Name:      "requests_total",
+	},
+	)
+
+	HistogramResponseTimeCache = promauto.NewHistogram(prometheus.HistogramOpts{
+		Namespace: "route256",
+		Subsystem: "cache",
+		Name:      "histogram_response_time_seconds",
+		Buckets:   prometheus.ExponentialBuckets(0.000001, 2, 16),
 	},
 	)
 )
 
-type cachedClient struct {
-	cache cache.Cache
-
-	directClient productServiceGRPCClient.ProductServiceClient
+type CachedClient interface {
+	GetProduct(context.Context, *product.GetProductRequest) (*product.GetProductResponse, bool)
+	SetToCache(ctx context.Context, req *product.GetProductRequest, res *product.GetProductResponse)
 }
 
-var _ productServiceGRPCClient.ProductServiceClient = &cachedClient{}
+type cachedClient struct {
+	cache cache.Cache
+}
 
-func NewCachedClient(cache cache.Cache, directClient productServiceGRPCClient.ProductServiceClient) productServiceGRPCClient.ProductServiceClient {
+var _ CachedClient = &cachedClient{}
+
+func NewCachedClient(cache cache.Cache) CachedClient {
 	return &cachedClient{
-		cache:        cache,
-		directClient: directClient,
+		cache: cache,
 	}
 }

@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 	"errors"
+	cachedProductService "route256/checkout/internal/clients/cache/product-service"
 	productServiceGRPCClient "route256/checkout/internal/clients/grpc/product-service"
 	productServiceGRPCClientMock "route256/checkout/internal/clients/grpc/product-service/mocks"
 	"route256/checkout/internal/domain/model"
@@ -16,6 +17,7 @@ import (
 	transactorMock "route256/libs/transactor/mocks"
 	workerPool "route256/libs/worker-pool"
 	"testing"
+	"time"
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/golang/mock/gomock"
@@ -177,12 +179,14 @@ func TestListCart(t *testing.T) {
 			)
 			wp.Init(ctx)
 
-			lruCache := cache.NewCache(1, 100)
-
 			repo := NewRepository(tt.checkoutRepositoryMock(mc), transactor.NewTransactionManager(dbMock))
 
+			lruCache := cache.NewCache(10, time.Second*10)
+
+			productServiceCachedClient := cachedProductService.NewCachedClient(lruCache)
+
 			productServiceSettings := NewProductServiceSettings(tt.limiterMock(mc))
-			productService := NewProductService(tt.productServiceClientMock(mc), productServiceSettings, lruCache)
+			productService := NewProductService(tt.productServiceClientMock(mc), productServiceSettings, productServiceCachedClient)
 
 			client := NewMockService(repo, productService, wp)
 

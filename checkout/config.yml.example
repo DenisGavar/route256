@@ -7,7 +7,7 @@ services:
     listCartWorkersCount: 
     rateLimit: 
     cacheCapacity: 
-    cacheTTL: 
+    cacheTTLInSeconds: 
   checkout:
     name: ""
     httpPort: ""

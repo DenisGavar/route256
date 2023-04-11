@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	checkoutV1 "route256/checkout/internal/api/checkout_v1"
+	cachedProductService "route256/checkout/internal/clients/cache/product-service"
 	"route256/checkout/internal/clients/grpc/loms"
 	productService "route256/checkout/internal/clients/grpc/product-service"
 	"route256/checkout/internal/config"
@@ -117,10 +118,12 @@ func runGRPC() error {
 
 	lruCache := cache.NewCache(
 		config.ConfigData.Services.ProductService.CacheCapacity,
-		config.ConfigData.Services.ProductService.CacheTTL,
+		time.Second*time.Duration(config.ConfigData.Services.ProductService.CacheTTLInSeconds),
 	)
 
-	productService := domain.NewProductService(productServiceClient, productServiceSettings, lruCache)
+	productServiceCachedClient := cachedProductService.NewCachedClient(lruCache)
+
+	productService := domain.NewProductService(productServiceClient, productServiceSettings, productServiceCachedClient)
 
 	// подключаемся к БД
 	ctx, cacnel := context.WithCancel(context.Background())
