@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	checkoutV1 "route256/checkout/internal/api/checkout_v1"
+	cachedProductService "route256/checkout/internal/clients/cache/product-service"
 	"route256/checkout/internal/clients/grpc/loms"
 	productService "route256/checkout/internal/clients/grpc/product-service"
 	"route256/checkout/internal/config"
@@ -14,7 +14,12 @@ import (
 	"route256/checkout/internal/domain/model"
 	repository "route256/checkout/internal/repository/postgres"
 	desc "route256/checkout/pkg/checkout_v1"
+	"route256/libs/cache"
+	grpcWrapper "route256/libs/grpc-wrapper"
 	"route256/libs/limiter"
+	"route256/libs/logger"
+	"route256/libs/metrics"
+	"route256/libs/tracing"
 	"route256/libs/transactor"
 	workerPool "route256/libs/worker-pool"
 	"sync"
@@ -22,28 +27,32 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/reflection"
 )
 
 func main() {
+	logger.Init()
+
 	err := config.Init()
 	if err != nil {
-		log.Fatal("config init", err)
+		logger.Fatal("config init", zap.Error(err))
 	}
+
+	tracing.Init(logger.GetLogger(), config.ConfigData.Services.Checkout.Name)
 
 	ctx := context.Background()
 
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(3)
 
 	go func() {
 		defer wg.Done()
 
 		err := runGRPC()
 		if err != nil {
-			log.Fatal("running GRPC", err)
+			logger.Fatal("running GRPC", zap.Error(err))
 		}
 	}()
 
@@ -52,7 +61,16 @@ func main() {
 
 		err := runHTTP(ctx)
 		if err != nil {
-			log.Fatal("running HTTP", err)
+			logger.Fatal("running HTTP", zap.Error(err))
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		err := runHTTPPrometheus(ctx)
+		if err != nil {
+			logger.Fatal("running HTTP prometheus", zap.Error(err))
 		}
 	}()
 
@@ -62,29 +80,35 @@ func main() {
 func runGRPC() error {
 	lis, err := net.Listen("tcp", config.ConfigData.Services.Checkout.GRPCPort)
 	if err != nil {
-		log.Printf("failed to listen")
+		logger.Error("failed to listen grpc", zap.String("port", config.ConfigData.Services.Checkout.GRPCPort))
 		return err
 	}
+	defer lis.Close()
 
-	s := grpc.NewServer()
-	reflection.Register(s)
+	// создаём grpc server, обёрнутый метриками и базовыми трейсами
+	s := grpcWrapper.NewServer()
 
-	// создаём клиентов
-	lomsConn, err := grpc.Dial(config.ConfigData.Services.Loms.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	// создаём grpc client, обёрнутый метриками и базовыми трейсами
+	lomsConn, err := grpcWrapper.Dial(
+		config.ConfigData.Services.Loms.Address,
+	)
 	if err != nil {
-		log.Printf("failed to creating client loms")
+		logger.Error("failed to creating client loms", zap.String("address", config.ConfigData.Services.Loms.Address))
 		return err
 	}
 	defer lomsConn.Close()
-	lomsClient := loms.New(lomsConn)
+	lomsClient := loms.New(lomsConn.GetClientConn())
 
-	productServiceConn, err := grpc.Dial(config.ConfigData.Services.ProductService.Address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	// создаём grpc client, обёрнутый метриками и базовыми трейсами
+	productServiceConn, err := grpcWrapper.Dial(
+		config.ConfigData.Services.ProductService.Address,
+	)
 	if err != nil {
-		log.Printf("failed to creating client product service")
+		logger.Error("failed to creating client product service", zap.String("address", config.ConfigData.Services.ProductService.Address))
 		return err
 	}
 	defer productServiceConn.Close()
-	productServiceClient := productService.New(productServiceConn, config.ConfigData.Services.ProductService.Token)
+	productServiceClient := productService.New(productServiceConn.GetClientConn(), config.ConfigData.Services.ProductService.Token)
 
 	rateLimit := config.ConfigData.Services.ProductService.RateLimit
 
@@ -92,7 +116,14 @@ func runGRPC() error {
 		limiter.NewLimiter(time.Second, rateLimit),
 	)
 
-	productService := domain.NewProductService(productServiceClient, productServiceSettings)
+	lruCache := cache.NewCache(
+		config.ConfigData.Services.ProductService.CacheCapacity,
+		time.Second*time.Duration(config.ConfigData.Services.ProductService.CacheTTLInSeconds),
+	)
+
+	productServiceCachedClient := cachedProductService.NewCachedClient(lruCache)
+
+	productService := domain.NewProductService(productServiceClient, productServiceSettings, productServiceCachedClient)
 
 	// подключаемся к БД
 	ctx, cacnel := context.WithCancel(context.Background())
@@ -108,7 +139,8 @@ func runGRPC() error {
 	// пул соединений
 	pool, err := pgxpool.Connect(ctx, psqlConn)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal("failed to creating pgxpool connection", zap.Error(err))
+		return err
 	}
 	defer pool.Close()
 
@@ -135,10 +167,10 @@ func runGRPC() error {
 
 	desc.RegisterCheckoutV1Server(s, checkoutV1.NewCheckoutV1(businessLogic))
 
-	log.Println("grpc server at", config.ConfigData.Services.Checkout.GRPCPort)
+	logger.Info("grpc server at", zap.String("port", config.ConfigData.Services.Checkout.GRPCPort))
 
 	if err := s.Serve(lis); err != nil {
-		log.Printf("failed to serve")
+		logger.Error("failed to serve grpc server")
 		return err
 	}
 
@@ -156,8 +188,12 @@ func runHTTP(ctx context.Context) error {
 		return err
 	}
 
-	log.Println("http served at", config.ConfigData.Services.Checkout.HTTPPort)
+	logger.Info("http served at", zap.String("port", config.ConfigData.Services.Checkout.HTTPPort))
 
 	return http.ListenAndServe(config.ConfigData.Services.Checkout.HTTPPort, mux)
+}
 
+func runHTTPPrometheus(ctx context.Context) error {
+	http.Handle("/metrics", metrics.New())
+	return http.ListenAndServe(config.ConfigData.Services.Checkout.PrometheusPort, nil)
 }

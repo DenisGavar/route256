@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 	"errors"
+	productServiceCachedClient "route256/checkout/internal/clients/cache/product-service"
 	"route256/checkout/internal/clients/grpc/loms"
 	productServiceGRPCClient "route256/checkout/internal/clients/grpc/product-service"
 	"route256/checkout/internal/domain/model"
@@ -48,14 +49,16 @@ func NewProductServiceSettings(limiter limiter.Limiter) *productServiceSettings 
 }
 
 type productService struct {
-	productServiceClient   productServiceGRPCClient.ProductServiceClient
-	productServiceSettings *productServiceSettings
+	productServiceClient       productServiceGRPCClient.ProductServiceClient
+	productServiceSettings     *productServiceSettings
+	productServiceCachedClient productServiceCachedClient.CachedClient
 }
 
-func NewProductService(productServiceClient productServiceGRPCClient.ProductServiceClient, productServiceSettings *productServiceSettings) *productService {
+func NewProductService(productServiceClient productServiceGRPCClient.ProductServiceClient, productServiceSettings *productServiceSettings, productServiceCachedClient productServiceCachedClient.CachedClient) *productService {
 	return &productService{
-		productServiceClient:   productServiceClient,
-		productServiceSettings: productServiceSettings,
+		productServiceClient:       productServiceClient,
+		productServiceSettings:     productServiceSettings,
+		productServiceCachedClient: productServiceCachedClient,
 	}
 }
 

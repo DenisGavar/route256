@@ -2,12 +2,15 @@ package cancel_order
 
 import (
 	"context"
-	"log"
+	"fmt"
+	"route256/libs/logger"
 	workerPool "route256/libs/worker-pool"
 	"route256/loms/internal/domain/model"
 	"time"
 
+	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
 
 // должен мочь получить список заказов на отмену (работа с репозиторием, но через сервис)
@@ -43,7 +46,12 @@ func (c *cancelOrderDaemon) RunCancelDaemon(workersCount int, cancelOrderTime ti
 
 	// создаём функцию на обработку
 	callback := func(cancelOrderRequest *model.CancelOrderRequest) *workerPool.Result[*model.CancelOrderRequest] {
-		log.Println("daemon: cancelling order")
+		logger.Debug("daemon canceling order", zap.String("request", fmt.Sprintf("%+v", cancelOrderRequest)))
+
+		span, ctx := opentracing.StartSpanFromContext(ctx, "daemon canceling order processing")
+		defer span.Finish()
+
+		span.SetTag("order_id", cancelOrderRequest.OrderId)
 
 		err := c.orderCanceler.CancelOrder(ctx, cancelOrderRequest)
 		if err != nil {
@@ -77,7 +85,7 @@ func (c *cancelOrderDaemon) RunCancelDaemon(workersCount int, cancelOrderTime ti
 		for result := range results {
 			if result.Error != nil {
 				// ошибку логируем
-				log.Println(result.Error)
+				logger.Error("daemon failed canceling order", zap.Error(result.Error))
 			}
 			// отмечаем, что задача выполнена, результат получен
 			pool.JobDone()
@@ -90,11 +98,14 @@ func (c *cancelOrderDaemon) RunCancelDaemon(workersCount int, cancelOrderTime ti
 		select {
 		case <-ticker.C:
 			// получаем заказы на отмену, передаём время, с которого заказы надо отменять
-			log.Println("checking orders to cancel")
+			logger.Debug("daemon checking orders to cancel")
+
+			span, ctx := opentracing.StartSpanFromContext(ctx, "daemon checking orders to cancel processing")
+
 			ordersToCancel, err := c.orderCanceler.OrdersToCancel(ctx, time.Now().Add(-cancelOrderTime))
 			if err != nil {
 				// ошибку логируем
-				log.Println(err)
+				logger.Error("daemon failed checking orders to cancel", zap.Error(err))
 				break
 			}
 			for _, orderToCancel := range ordersToCancel {
@@ -105,6 +116,7 @@ func (c *cancelOrderDaemon) RunCancelDaemon(workersCount int, cancelOrderTime ti
 					Results:  results,
 				})
 			}
+			span.Finish()
 		case <-ctx.Done():
 			// вышли по отмене контекста
 			return

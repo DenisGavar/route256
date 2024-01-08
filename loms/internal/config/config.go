@@ -19,7 +19,9 @@ type Services struct {
 }
 
 type Loms struct {
-	Port string `yaml:"port"`
+	Name           string `yaml:"name"`
+	Port           string `yaml:"port"`
+	PrometheusPort string `yaml:"prometheusPort"`
 }
 
 type CancelOrderDaemon struct {

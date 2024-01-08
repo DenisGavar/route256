@@ -3,19 +3,33 @@ package repository
 import (
 	"context"
 	"encoding/json"
+	"route256/libs/logger"
+	"route256/libs/metrics"
 	"route256/loms/internal/domain/model"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/opentracing/opentracing-go"
+	"go.uber.org/zap"
 )
 
 func (r *repository) ChangeStatus(ctx context.Context, orderId int64, status string) error {
 	// меняем статус заказа
+	logger.Debug("loms repository", zap.String("handler", "ChangeStatus"), zap.Int64("orderId", orderId), zap.String("status", status))
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "loms repository ChangeStatus processing")
+	defer span.Finish()
+
+	span.SetTag("order_id", orderId)
+	span.SetTag("status", status)
+
 	changingStatusTime := time.Now()
 
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+
+	metrics.QueryCounter.WithLabelValues("update", ordersTable).Inc()
 
 	query := pgBuilder.Update(ordersTable).
 		Set("status", status).
@@ -46,6 +60,8 @@ func (r *repository) ChangeStatus(ctx context.Context, orderId int64, status str
 	if err != nil {
 		return err
 	}
+
+	metrics.QueryCounter.WithLabelValues("insert", outboxOrdersTable).Inc()
 
 	// сохраняем тело сообщения
 	queryInsert := pgBuilder.Insert(outboxOrdersTable).

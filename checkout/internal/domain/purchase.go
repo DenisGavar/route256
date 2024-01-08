@@ -2,14 +2,24 @@ package domain
 
 import (
 	"context"
+	"fmt"
 	"route256/checkout/internal/domain/model"
+	"route256/libs/logger"
 	loms "route256/loms/pkg/loms_v1"
 
+	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
 
 func (s *service) Purchase(ctx context.Context, req *model.PurchaseRequest) (*model.PurchaseResponse, error) {
 	// создаём заказ
+	logger.Debug("checkout domain", zap.String("handler", "Purchase"), zap.String("request", fmt.Sprintf("%+v", req)))
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "checkout domain Purchase processing")
+	defer span.Finish()
+
+	span.SetTag("user", req.User)
 
 	var order *loms.CreateOrderResponse
 	var err error

@@ -27,11 +27,15 @@ type ProductService struct {
 	Token                string `yaml:"token"`
 	ListCartWorkersCount int    `yaml:"listCartWorkersCount"`
 	RateLimit            int    `yaml:"rateLimit"`
+	CacheCapacity        int    `yaml:"cacheCapacity"`
+	CacheTTLInSeconds    int    `yaml:"cacheTTLInSeconds"`
 }
 
 type Checkout struct {
-	HTTPPort string `yaml:"httpPort"`
-	GRPCPort string `yaml:"grpcPort"`
+	Name           string `yaml:"name"`
+	HTTPPort       string `yaml:"httpPort"`
+	GRPCPort       string `yaml:"grpcPort"`
+	PrometheusPort string `yaml:"prometheusPort"`
 }
 
 type CheckoutPgBouncer struct {

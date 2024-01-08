@@ -1,0 +1,19 @@
+groups:
+- name: alerts
+  rules:
+  - alert: TargetIsDown
+    expr: up == 0
+    for: 30s
+    labels:
+      severity: medium
+    annotations:
+      summary: "The target {{ $labels.job }} is down"
+      description: "Instance {{ $labels.instance }} of job {{ $labels.job }} has been down for more than 30 seconds."
+  - alert: TooManyErrors
+    expr: (sum(rate(route256_grpc_histogram_response_time_server_seconds_count{status!="OK"}[1m])) BY (instance, job))/(sum(rate(route256_grpc_histogram_response_time_server_seconds_count{status="OK"}[1m])) BY (instance, job))*100>5
+    for: 30s
+    labels:
+      severity: medium
+    annotations:
+      summary: "Target {{ $labels.job }} has more than 5% errors"
+      description: "Instance {{ $labels.instance }} of job {{ $labels.job }} has too many errors for more than 30 seconds."

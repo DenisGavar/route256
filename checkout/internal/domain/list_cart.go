@@ -2,16 +2,27 @@ package domain
 
 import (
 	"context"
+	"fmt"
 	"route256/checkout/internal/domain/model"
 	product "route256/checkout/pkg/product-service_v1"
+	"route256/libs/logger"
 	workerPool "route256/libs/worker-pool"
 	"sync"
 
+	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
 
 func (s *service) ListCart(ctx context.Context, req *model.ListCartRequest) (*model.ListCartResponse, error) {
 	// получаем список товаров в корзине
+	logger.Debug("checkout domain", zap.String("handler", "ListCart"), zap.String("request", fmt.Sprintf("%+v", req)))
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "checkout domain ListCart processing")
+	defer span.Finish()
+
+	span.SetTag("user", req.User)
+
 	listCart, err := s.repository.checkoutRepository.ListCart(ctx, req)
 	if err != nil {
 		return nil, errors.WithMessage(err, ErrGettingListCart.Error())
@@ -21,22 +32,31 @@ func (s *service) ListCart(ctx context.Context, req *model.ListCartRequest) (*mo
 
 	// функция для worker-а
 	callback := func(cartItem *model.CartItem) *workerPool.Result[*model.CartItem] {
-		// вкючаем лимитер, значение передаётся через конфиг
-		err := s.productService.productServiceSettings.limiter.Wait(ctx)
-		if err != nil {
-			return &workerPool.Result[*model.CartItem]{
-				Out:   nil,
-				Error: errors.WithMessage(err, ErrLimiter.Error()),
+		req := &product.GetProductRequest{Sku: cartItem.Sku}
+		// пытаемся достать значение из кэша
+		productResp, ok := s.productService.productServiceCachedClient.GetProduct(ctx, req)
+		if !ok {
+			// если значение из кэша не достали, то идём в product service
+			// вкючаем лимитер, значение передаётся через конфиг
+			err := s.productService.productServiceSettings.limiter.Wait(ctx)
+			if err != nil {
+				return &workerPool.Result[*model.CartItem]{
+					Out:   nil,
+					Error: errors.WithMessage(err, ErrLimiter.Error()),
+				}
 			}
-		}
-		// получаем данные из product service
-		productResp, err := s.productService.productServiceClient.GetProduct(ctx, &product.GetProductRequest{Sku: cartItem.Sku})
-		if err != nil {
-			// если ошибка при получении данных, то возвращаем ошибку
-			return &workerPool.Result[*model.CartItem]{
-				Out:   nil,
-				Error: errors.WithMessage(err, ErrGettingProduct.Error()),
+			// получаем данные из product service
+			productResp, err = s.productService.productServiceClient.GetProduct(ctx, req)
+			if err != nil {
+				// если ошибка при получении данных, то возвращаем ошибку
+				return &workerPool.Result[*model.CartItem]{
+					Out:   nil,
+					Error: errors.WithMessage(err, ErrGettingProduct.Error()),
+				}
 			}
+
+			// запускаем горутину, помещаем полученное значение в кэш
+			go s.productService.productServiceCachedClient.SetToCache(context.Background(), req, productResp)
 		}
 
 		// возвращаем дополненную структуру

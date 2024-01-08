@@ -2,22 +2,32 @@ package repository
 
 import (
 	"context"
-	"log"
+	"fmt"
+	"route256/libs/logger"
+	"route256/libs/metrics"
 	"route256/loms/internal/domain/model"
 	"route256/loms/internal/repository/schema"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/pgxscan"
+	"github.com/opentracing/opentracing-go"
+	"go.uber.org/zap"
 )
 
 func (r *repository) ReserveItems(ctx context.Context, orderId int64, req *model.ReserveStocksItem) error {
-	log.Printf("reserve: %+v", req)
-
 	// резервируем товары на складах
+	logger.Debug("loms repository", zap.String("handler", "ReserveItems"), zap.Int64("orderId", orderId), zap.String("request", fmt.Sprintf("%+v", req)))
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "loms repository ReserveItems processing")
+	defer span.Finish()
+
+	span.SetTag("order_id", orderId)
 
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+
+	metrics.QueryCounter.WithLabelValues("select", itemsStocksTable).Inc()
 
 	// получаем строки из БД, которые относятся к данному запросу
 	query := pgBuilder.Select("id", "count").
@@ -42,6 +52,8 @@ func (r *repository) ReserveItems(ctx context.Context, orderId int64, req *model
 		if countToDelete != 0 {
 			// надо удалить строку или обновить
 			if countToDelete < stockItem.Count {
+				metrics.QueryCounter.WithLabelValues("update", itemsStocksTable).Inc()
+
 				// надо убрать только часть количества
 				query := pgBuilder.Update(itemsStocksTable).
 					Set("count", sq.Expr("count - ?", countToDelete)).
@@ -58,6 +70,8 @@ func (r *repository) ReserveItems(ctx context.Context, orderId int64, req *model
 				}
 				countToDelete = 0
 			} else {
+				metrics.QueryCounter.WithLabelValues("delete", itemsStocksTable).Inc()
+
 				// надо убрать всё количество
 				query := pgBuilder.Delete(itemsStocksTable).
 					Where("id = ?", stockItem.StockId)
@@ -78,6 +92,8 @@ func (r *repository) ReserveItems(ctx context.Context, orderId int64, req *model
 			break
 		}
 	}
+
+	metrics.QueryCounter.WithLabelValues("insert", itemsStocksReservationTable).Inc()
 
 	// добавляем запись в резерв
 	queryInsert := pgBuilder.Insert(itemsStocksReservationTable).

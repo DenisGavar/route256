@@ -3,9 +3,10 @@ package sender
 import (
 	"context"
 	"fmt"
-	"log"
+	"route256/libs/logger"
 
 	"github.com/Shopify/sarama"
+	"go.uber.org/zap"
 )
 
 func (s *orderSender) SendOrder(ctx context.Context, orderMessage *OrderMessage) error {
@@ -22,6 +23,7 @@ func (s *orderSender) SendOrder(ctx context.Context, orderMessage *OrderMessage)
 		return err
 	}
 
-	log.Printf("key: %d, partition: %d, offset: %d", orderMessage.Key, partition, offset)
+	logger.Debug("sending order", zap.Int64("key", orderMessage.Key), zap.Int32("partition", partition), zap.Int64("offset", offset))
+
 	return nil
 }

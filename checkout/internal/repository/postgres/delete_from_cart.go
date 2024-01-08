@@ -2,18 +2,33 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"route256/checkout/internal/domain/model"
 	"route256/checkout/internal/repository/schema"
+	"route256/libs/logger"
+	"route256/libs/metrics"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/pgxscan"
+	"github.com/opentracing/opentracing-go"
+	"go.uber.org/zap"
 )
 
 func (r *repository) DeleteFromCart(ctx context.Context, deleteFromCartRequest *model.DeleteFromCartRequest) error {
 	// убираем товары из корзины
+	logger.Debug("checkout repository", zap.String("handler", "DeleteFromCart"), zap.String("request", fmt.Sprintf("%+v", deleteFromCartRequest)))
+
+	span, ctx := opentracing.StartSpanFromContext(ctx, "checkout repository DeleteFromCart processing")
+	defer span.Finish()
+
+	span.SetTag("user", deleteFromCartRequest.User)
+	span.SetTag("sku", deleteFromCartRequest.Sku)
+
 	db := r.queryEngineProvider.GetQueryEngine(ctx)
 
 	pgBuilder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+
+	metrics.QueryCounter.WithLabelValues("select", basketsTable).Inc()
 
 	// получаем строки из БД, которые относятся к данному запросу
 	query := pgBuilder.Select("id", "count").
@@ -39,6 +54,9 @@ func (r *repository) DeleteFromCart(ctx context.Context, deleteFromCartRequest *
 			// надо удалить строку или обновить
 			if countToDelete < cartItem.Count {
 				// надо убрать только часть количества
+
+				metrics.QueryCounter.WithLabelValues("update", basketsTable).Inc()
+
 				query := pgBuilder.Update(basketsTable).
 					Set("count", sq.Expr("count - ?", countToDelete)).
 					Where("id = ?", cartItem.BasketId)
@@ -55,6 +73,9 @@ func (r *repository) DeleteFromCart(ctx context.Context, deleteFromCartRequest *
 				countToDelete = 0
 			} else {
 				// надо убрать всё количество
+
+				metrics.QueryCounter.WithLabelValues("delete", basketsTable).Inc()
+
 				query := pgBuilder.Delete(basketsTable).
 					Where("id = ?", cartItem.BasketId)
 

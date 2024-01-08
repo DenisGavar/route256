@@ -6,9 +6,13 @@ services:
     token: ""
     listCartWorkersCount: 
     rateLimit: 
+    cacheCapacity: 
+    cacheTTLInSeconds: 
   checkout:
+    name: ""
     httpPort: ""
     grpcPort: ""
+    prometheusPort: ""
   checkoutPgBouncer:
     host: ""
     port: ""
