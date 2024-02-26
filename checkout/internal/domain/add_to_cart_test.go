@@ -8,6 +8,7 @@ import (
 	"route256/checkout/internal/domain/model"
 	repository "route256/checkout/internal/repository/postgres"
 	repositoryMock "route256/checkout/internal/repository/postgres/mocks"
+	"route256/libs/logger"
 	"route256/libs/transactor"
 	transactorMock "route256/libs/transactor/mocks"
 	loms "route256/loms/pkg/loms_v1"
@@ -88,12 +89,12 @@ func TestAddToCart(t *testing.T) {
 			err: nil,
 			checkoutRepositoryMock: func(mc *gomock.Controller) repository.CheckoutRepository {
 				mock := repositoryMock.NewMockCheckoutRepository(mc)
-				mock.EXPECT().AddToCart(ctx, req).Return(nil)
+				mock.EXPECT().AddToCart(gomock.Any(), req).Return(nil)
 				return mock
 			},
 			lomsClientMock: func(mc *gomock.Controller) lomsClient.LomsClient {
 				mock := lomsClientMock.NewMockLomsClient(mc)
-				mock.EXPECT().Stocks(ctx, reqStocks).Return(resStocks, nil)
+				mock.EXPECT().Stocks(gomock.Any(), reqStocks).Return(resStocks, nil)
 				return mock
 			},
 		},
@@ -110,7 +111,7 @@ func TestAddToCart(t *testing.T) {
 			},
 			lomsClientMock: func(mc *gomock.Controller) lomsClient.LomsClient {
 				mock := lomsClientMock.NewMockLomsClient(mc)
-				mock.EXPECT().Stocks(ctx, reqStocks).Return(nil, lomsErr)
+				mock.EXPECT().Stocks(gomock.Any(), reqStocks).Return(nil, lomsErr)
 				return mock
 			},
 		},
@@ -123,12 +124,12 @@ func TestAddToCart(t *testing.T) {
 			err: ErrAddingToCart,
 			checkoutRepositoryMock: func(mc *gomock.Controller) repository.CheckoutRepository {
 				mock := repositoryMock.NewMockCheckoutRepository(mc)
-				mock.EXPECT().AddToCart(ctx, req).Return(repositoryErr)
+				mock.EXPECT().AddToCart(gomock.Any(), req).Return(repositoryErr)
 				return mock
 			},
 			lomsClientMock: func(mc *gomock.Controller) lomsClient.LomsClient {
 				mock := lomsClientMock.NewMockLomsClient(mc)
-				mock.EXPECT().Stocks(ctx, reqStocks).Return(resStocks, nil)
+				mock.EXPECT().Stocks(gomock.Any(), reqStocks).Return(resStocks, nil)
 				return mock
 			},
 		},
@@ -145,7 +146,7 @@ func TestAddToCart(t *testing.T) {
 			},
 			lomsClientMock: func(mc *gomock.Controller) lomsClient.LomsClient {
 				mock := lomsClientMock.NewMockLomsClient(mc)
-				mock.EXPECT().Stocks(ctx, reqStocks).Return(resStocksNotEnough, nil)
+				mock.EXPECT().Stocks(gomock.Any(), reqStocks).Return(resStocksNotEnough, nil)
 				return mock
 			},
 		},
@@ -155,6 +156,8 @@ func TestAddToCart(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
+			logger.Init()
 
 			repo := NewRepository(tt.checkoutRepositoryMock(mc), transactor.NewTransactionManager(dbMock))
 

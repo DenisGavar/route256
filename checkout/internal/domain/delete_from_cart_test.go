@@ -6,6 +6,7 @@ import (
 	"route256/checkout/internal/domain/model"
 	repository "route256/checkout/internal/repository/postgres"
 	repositoryMock "route256/checkout/internal/repository/postgres/mocks"
+	"route256/libs/logger"
 	"route256/libs/transactor"
 	transactorMock "route256/libs/transactor/mocks"
 	"testing"
@@ -27,11 +28,12 @@ func TestDeleteFromCart(t *testing.T) {
 	}
 
 	var (
-		mc    = gomock.NewController(t)
-		ctx   = context.Background()
-		tx    = transactorMock.NewMockTx(mc)
-		ctxTx = context.WithValue(ctx, transactor.TxKey, tx)
-		opts  = pgx.TxOptions{IsoLevel: pgx.RepeatableRead}
+		mc  = gomock.NewController(t)
+		ctx = context.Background()
+		tx  = transactorMock.NewMockTx(mc)
+		// TODO: use this context instead of gomock.Any()
+		//ctxTx = context.WithValue(ctx, transactor.TxKey, tx)
+		opts = pgx.TxOptions{IsoLevel: pgx.RepeatableRead}
 
 		userID    = gofakeit.Int64()
 		itemSku   = gofakeit.Uint32()
@@ -62,13 +64,14 @@ func TestDeleteFromCart(t *testing.T) {
 			err: nil,
 			checkoutRepositoryMock: func(mc *gomock.Controller) repository.CheckoutRepository {
 				mock := repositoryMock.NewMockCheckoutRepository(mc)
-				mock.EXPECT().DeleteFromCart(ctxTx, req).Return(nil)
+				// TODO: use ctxTx instead of gomock.Any()
+				mock.EXPECT().DeleteFromCart(gomock.Any(), req).Return(nil)
 				return mock
 			},
 			dbMock: func(mc *gomock.Controller) transactor.DB {
 				mock := transactorMock.NewMockDB(mc)
-				mock.EXPECT().BeginTx(ctx, opts).Return(tx, nil)
-				tx.EXPECT().Commit(ctx).Return(nil)
+				mock.EXPECT().BeginTx(gomock.Any(), opts).Return(tx, nil)
+				tx.EXPECT().Commit(gomock.Any()).Return(nil)
 				return mock
 			},
 		},
@@ -81,13 +84,14 @@ func TestDeleteFromCart(t *testing.T) {
 			err: ErrDeletingFromCart,
 			checkoutRepositoryMock: func(mc *gomock.Controller) repository.CheckoutRepository {
 				mock := repositoryMock.NewMockCheckoutRepository(mc)
-				mock.EXPECT().DeleteFromCart(ctxTx, req).Return(repositoryErr)
+				// TODO: use ctxTx instead of gomock.Any()
+				mock.EXPECT().DeleteFromCart(gomock.Any(), req).Return(repositoryErr)
 				return mock
 			},
 			dbMock: func(mc *gomock.Controller) transactor.DB {
 				mock := transactorMock.NewMockDB(mc)
-				mock.EXPECT().BeginTx(ctx, opts).Return(tx, nil)
-				tx.EXPECT().Rollback(ctx).Return(nil)
+				mock.EXPECT().BeginTx(gomock.Any(), opts).Return(tx, nil)
+				tx.EXPECT().Rollback(gomock.Any()).Return(nil)
 				return mock
 			},
 		},
@@ -97,6 +101,8 @@ func TestDeleteFromCart(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
+			logger.Init()
 
 			repo := NewRepository(tt.checkoutRepositoryMock(mc), transactor.NewTransactionManager(tt.dbMock(mc)))
 

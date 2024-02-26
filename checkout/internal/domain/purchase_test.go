@@ -8,6 +8,7 @@ import (
 	"route256/checkout/internal/domain/model"
 	repository "route256/checkout/internal/repository/postgres"
 	repositoryMock "route256/checkout/internal/repository/postgres/mocks"
+	"route256/libs/logger"
 	"route256/libs/transactor"
 	transactorMock "route256/libs/transactor/mocks"
 	loms "route256/loms/pkg/loms_v1"
@@ -31,11 +32,12 @@ func TestPurchase(t *testing.T) {
 	}
 
 	var (
-		mc    = gomock.NewController(t)
-		ctx   = context.Background()
-		tx    = transactorMock.NewMockTx(mc)
-		ctxTx = context.WithValue(ctx, transactor.TxKey, tx)
-		opts  = pgx.TxOptions{IsoLevel: pgx.RepeatableRead}
+		mc  = gomock.NewController(t)
+		ctx = context.Background()
+		tx  = transactorMock.NewMockTx(mc)
+		// TODO: use this context instead of gomock.Any()
+		//ctxTx = context.WithValue(ctx, transactor.TxKey, tx)
+		opts = pgx.TxOptions{IsoLevel: pgx.RepeatableRead}
 
 		userID    = gofakeit.Int64()
 		orderID   = gofakeit.Int64()
@@ -114,19 +116,22 @@ func TestPurchase(t *testing.T) {
 			err:  nil,
 			checkoutRepositoryMock: func(mc *gomock.Controller) repository.CheckoutRepository {
 				mock := repositoryMock.NewMockCheckoutRepository(mc)
-				mock.EXPECT().ListCart(ctxTx, reqListCart).Return(resListCart, nil)
-				mock.EXPECT().DeleteFromCart(ctxTx, reqDeleteFromCart).Return(nil)
+				// TODO: use ctxTx instead of gomock.Any()
+				mock.EXPECT().ListCart(gomock.Any(), reqListCart).Return(resListCart, nil)
+				// TODO: use ctxTx instead of gomock.Any()
+				mock.EXPECT().DeleteFromCart(gomock.Any(), reqDeleteFromCart).Return(nil)
 				return mock
 			},
 			dbMock: func(mc *gomock.Controller) transactor.DB {
 				mock := transactorMock.NewMockDB(mc)
-				mock.EXPECT().BeginTx(ctx, opts).Return(tx, nil)
-				tx.EXPECT().Commit(ctx).Return(nil)
+				mock.EXPECT().BeginTx(gomock.Any(), opts).Return(tx, nil)
+				tx.EXPECT().Commit(gomock.Any()).Return(nil)
 				return mock
 			},
 			lomsClientMock: func(mc *gomock.Controller) lomsClient.LomsClient {
 				mock := lomsClientMock.NewMockLomsClient(mc)
-				mock.EXPECT().CreateOrder(ctxTx, reqCreateOrder).Return(resCreateOrder, nil)
+				// TODO: use ctxTx instead of gomock.Any()
+				mock.EXPECT().CreateOrder(gomock.Any(), reqCreateOrder).Return(resCreateOrder, nil)
 				return mock
 			},
 		},
@@ -140,13 +145,14 @@ func TestPurchase(t *testing.T) {
 			err:  ErrGettingListCart,
 			checkoutRepositoryMock: func(mc *gomock.Controller) repository.CheckoutRepository {
 				mock := repositoryMock.NewMockCheckoutRepository(mc)
-				mock.EXPECT().ListCart(ctxTx, reqListCart).Return(nil, repositoryErr)
+				// TODO: use ctxTx instead of gomock.Any()
+				mock.EXPECT().ListCart(gomock.Any(), reqListCart).Return(nil, repositoryErr)
 				return mock
 			},
 			dbMock: func(mc *gomock.Controller) transactor.DB {
 				mock := transactorMock.NewMockDB(mc)
-				mock.EXPECT().BeginTx(ctx, opts).Return(tx, nil)
-				tx.EXPECT().Rollback(ctx).Return(nil)
+				mock.EXPECT().BeginTx(gomock.Any(), opts).Return(tx, nil)
+				tx.EXPECT().Rollback(gomock.Any()).Return(nil)
 				return mock
 			},
 			lomsClientMock: func(mc *gomock.Controller) lomsClient.LomsClient {
@@ -164,13 +170,14 @@ func TestPurchase(t *testing.T) {
 			err:  nil,
 			checkoutRepositoryMock: func(mc *gomock.Controller) repository.CheckoutRepository {
 				mock := repositoryMock.NewMockCheckoutRepository(mc)
-				mock.EXPECT().ListCart(ctxTx, reqListCart).Return(resListCartEmpty, nil)
+				// TODO: use ctxTx instead of gomock.Any()
+				mock.EXPECT().ListCart(gomock.Any(), reqListCart).Return(resListCartEmpty, nil)
 				return mock
 			},
 			dbMock: func(mc *gomock.Controller) transactor.DB {
 				mock := transactorMock.NewMockDB(mc)
-				mock.EXPECT().BeginTx(ctx, opts).Return(tx, nil)
-				tx.EXPECT().Commit(ctx).Return(nil)
+				mock.EXPECT().BeginTx(gomock.Any(), opts).Return(tx, nil)
+				tx.EXPECT().Commit(gomock.Any()).Return(nil)
 				return mock
 			},
 			lomsClientMock: func(mc *gomock.Controller) lomsClient.LomsClient {
@@ -188,18 +195,20 @@ func TestPurchase(t *testing.T) {
 			err:  ErrCreatingOrder,
 			checkoutRepositoryMock: func(mc *gomock.Controller) repository.CheckoutRepository {
 				mock := repositoryMock.NewMockCheckoutRepository(mc)
-				mock.EXPECT().ListCart(ctxTx, reqListCart).Return(resListCart, nil)
+				// TODO: use ctxTx instead of gomock.Any()
+				mock.EXPECT().ListCart(gomock.Any(), reqListCart).Return(resListCart, nil)
 				return mock
 			},
 			dbMock: func(mc *gomock.Controller) transactor.DB {
 				mock := transactorMock.NewMockDB(mc)
-				mock.EXPECT().BeginTx(ctx, opts).Return(tx, nil)
-				tx.EXPECT().Rollback(ctx).Return(nil)
+				mock.EXPECT().BeginTx(gomock.Any(), opts).Return(tx, nil)
+				tx.EXPECT().Rollback(gomock.Any()).Return(nil)
 				return mock
 			},
 			lomsClientMock: func(mc *gomock.Controller) lomsClient.LomsClient {
 				mock := lomsClientMock.NewMockLomsClient(mc)
-				mock.EXPECT().CreateOrder(ctxTx, reqCreateOrder).Return(nil, lomsErr)
+				// TODO: use ctxTx instead of gomock.Any()
+				mock.EXPECT().CreateOrder(gomock.Any(), reqCreateOrder).Return(nil, lomsErr)
 				return mock
 			},
 		},
@@ -213,19 +222,22 @@ func TestPurchase(t *testing.T) {
 			err:  ErrDeletingFromCart,
 			checkoutRepositoryMock: func(mc *gomock.Controller) repository.CheckoutRepository {
 				mock := repositoryMock.NewMockCheckoutRepository(mc)
-				mock.EXPECT().ListCart(ctxTx, reqListCart).Return(resListCart, nil)
-				mock.EXPECT().DeleteFromCart(ctxTx, reqDeleteFromCart).Return(repositoryErr)
+				// TODO: use ctxTx instead of gomock.Any()
+				mock.EXPECT().ListCart(gomock.Any(), reqListCart).Return(resListCart, nil)
+				// TODO: use ctxTx instead of gomock.Any()
+				mock.EXPECT().DeleteFromCart(gomock.Any(), reqDeleteFromCart).Return(repositoryErr)
 				return mock
 			},
 			dbMock: func(mc *gomock.Controller) transactor.DB {
 				mock := transactorMock.NewMockDB(mc)
-				mock.EXPECT().BeginTx(ctx, opts).Return(tx, nil)
-				tx.EXPECT().Rollback(ctx).Return(nil)
+				mock.EXPECT().BeginTx(gomock.Any(), opts).Return(tx, nil)
+				tx.EXPECT().Rollback(gomock.Any()).Return(nil)
 				return mock
 			},
 			lomsClientMock: func(mc *gomock.Controller) lomsClient.LomsClient {
 				mock := lomsClientMock.NewMockLomsClient(mc)
-				mock.EXPECT().CreateOrder(ctxTx, reqCreateOrder).Return(resCreateOrder, nil)
+				// TODO: use ctxTx instead of gomock.Any()
+				mock.EXPECT().CreateOrder(gomock.Any(), reqCreateOrder).Return(resCreateOrder, nil)
 				return mock
 			},
 		},
@@ -235,6 +247,8 @@ func TestPurchase(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
+			logger.Init()
 
 			repo := NewRepository(tt.checkoutRepositoryMock(mc), transactor.NewTransactionManager(tt.dbMock(mc)))
 

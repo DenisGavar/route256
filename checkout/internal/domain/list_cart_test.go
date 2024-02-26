@@ -13,6 +13,7 @@ import (
 	"route256/libs/cache"
 	"route256/libs/limiter"
 	limiterMock "route256/libs/limiter/mocks"
+	"route256/libs/logger"
 	"route256/libs/transactor"
 	transactorMock "route256/libs/transactor/mocks"
 	workerPool "route256/libs/worker-pool"
@@ -105,17 +106,17 @@ func TestListCart(t *testing.T) {
 			err:  nil,
 			checkoutRepositoryMock: func(mc *gomock.Controller) repository.CheckoutRepository {
 				mock := repositoryMock.NewMockCheckoutRepository(mc)
-				mock.EXPECT().ListCart(ctx, req).Return(resListCart, nil)
+				mock.EXPECT().ListCart(gomock.Any(), req).Return(resListCart, nil)
 				return mock
 			},
 			limiterMock: func(mc *gomock.Controller) limiter.Limiter {
 				mock := limiterMock.NewMockLimiter(mc)
-				mock.EXPECT().Wait(ctx).Return(nil)
+				mock.EXPECT().Wait(gomock.Any()).Return(nil)
 				return mock
 			},
 			productServiceClientMock: func(mc *gomock.Controller) productServiceGRPCClient.ProductServiceClient {
 				mock := productServiceGRPCClientMock.NewMockProductServiceClient(mc)
-				mock.EXPECT().GetProduct(ctx, reqGetProduct).Return(resGetProduct, nil)
+				mock.EXPECT().GetProduct(gomock.Any(), reqGetProduct).Return(resGetProduct, nil)
 				return mock
 			},
 		},
@@ -129,7 +130,7 @@ func TestListCart(t *testing.T) {
 			err:  ErrGettingListCart,
 			checkoutRepositoryMock: func(mc *gomock.Controller) repository.CheckoutRepository {
 				mock := repositoryMock.NewMockCheckoutRepository(mc)
-				mock.EXPECT().ListCart(ctx, req).Return(nil, repositoryErr)
+				mock.EXPECT().ListCart(gomock.Any(), req).Return(nil, repositoryErr)
 				return mock
 			},
 			limiterMock: func(mc *gomock.Controller) limiter.Limiter {
@@ -151,17 +152,17 @@ func TestListCart(t *testing.T) {
 			err:  ErrGettingProduct,
 			checkoutRepositoryMock: func(mc *gomock.Controller) repository.CheckoutRepository {
 				mock := repositoryMock.NewMockCheckoutRepository(mc)
-				mock.EXPECT().ListCart(ctx, req).Return(resListCart, nil)
+				mock.EXPECT().ListCart(gomock.Any(), req).Return(resListCart, nil)
 				return mock
 			},
 			limiterMock: func(mc *gomock.Controller) limiter.Limiter {
 				mock := limiterMock.NewMockLimiter(mc)
-				mock.EXPECT().Wait(ctx).Return(nil)
+				mock.EXPECT().Wait(gomock.Any()).Return(nil)
 				return mock
 			},
 			productServiceClientMock: func(mc *gomock.Controller) productServiceGRPCClient.ProductServiceClient {
 				mock := productServiceGRPCClientMock.NewMockProductServiceClient(mc)
-				mock.EXPECT().GetProduct(ctx, reqGetProduct).Return(nil, productServiceErr)
+				mock.EXPECT().GetProduct(gomock.Any(), reqGetProduct).Return(nil, productServiceErr)
 				return mock
 			},
 		},
@@ -172,12 +173,13 @@ func TestListCart(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			//
+			logger.Init()
+
 			wp := workerPool.New[*model.CartItem, *model.CartItem](
-				ctx,
+				tt.args.ctx,
 				listCartWorkersCount,
 			)
-			wp.Init(ctx)
+			wp.Init(tt.args.ctx)
 
 			repo := NewRepository(tt.checkoutRepositoryMock(mc), transactor.NewTransactionManager(dbMock))
 
@@ -197,6 +199,8 @@ func TestListCart(t *testing.T) {
 			} else {
 				require.Equal(t, tt.err, err)
 			}
+
+			wp.Stop(false)
 
 		})
 	}
