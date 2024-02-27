@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 	"errors"
+	"route256/libs/logger"
 	"route256/libs/transactor"
 	transactorMock "route256/libs/transactor/mocks"
 	"route256/loms/internal/domain/model"
@@ -53,8 +54,8 @@ func TestOrderPayed(t *testing.T) {
 			err: nil,
 			lomsRepositoryMock: func(mc *gomock.Controller) repository.LomsRepository {
 				mock := repositoryMock.NewMockLomsRepository(mc)
-				mock.EXPECT().ClearReserves(ctx, req.OrderId).Return(nil)
-				mock.EXPECT().ChangeStatus(ctx, orderId, model.OrderStatusPayed).Return(nil)
+				mock.EXPECT().ClearReserves(gomock.Any(), req.OrderId).Return(nil)
+				mock.EXPECT().ChangeStatus(gomock.Any(), orderId, model.OrderStatusPayed).Return(nil)
 				return mock
 			},
 		},
@@ -67,7 +68,7 @@ func TestOrderPayed(t *testing.T) {
 			err: ErrClearingReserves,
 			lomsRepositoryMock: func(mc *gomock.Controller) repository.LomsRepository {
 				mock := repositoryMock.NewMockLomsRepository(mc)
-				mock.EXPECT().ClearReserves(ctx, req.OrderId).Return(repositoryErr)
+				mock.EXPECT().ClearReserves(gomock.Any(), req.OrderId).Return(repositoryErr)
 				return mock
 			},
 		},
@@ -80,8 +81,8 @@ func TestOrderPayed(t *testing.T) {
 			err: ErrChangingStatus,
 			lomsRepositoryMock: func(mc *gomock.Controller) repository.LomsRepository {
 				mock := repositoryMock.NewMockLomsRepository(mc)
-				mock.EXPECT().ClearReserves(ctx, req.OrderId).Return(nil)
-				mock.EXPECT().ChangeStatus(ctx, req.OrderId, model.OrderStatusPayed).Return(repositoryErr)
+				mock.EXPECT().ClearReserves(gomock.Any(), req.OrderId).Return(nil)
+				mock.EXPECT().ChangeStatus(gomock.Any(), req.OrderId, model.OrderStatusPayed).Return(repositoryErr)
 				return mock
 			},
 		},
@@ -91,6 +92,8 @@ func TestOrderPayed(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
+			logger.Init()
 
 			repo := NewRepository(tt.lomsRepositoryMock(mc), transactor.NewTransactionManager(dbMock))
 

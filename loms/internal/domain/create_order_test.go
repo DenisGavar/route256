@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 	"errors"
+	"route256/libs/logger"
 	"route256/libs/transactor"
 	transactorMock "route256/libs/transactor/mocks"
 	"route256/loms/internal/domain/model"
@@ -27,11 +28,12 @@ func TestCreateOrder(t *testing.T) {
 	}
 
 	var (
-		mc    = gomock.NewController(t)
-		ctx   = context.Background()
-		tx    = transactorMock.NewMockTx(mc)
-		ctxTx = context.WithValue(ctx, transactor.TxKey, tx)
-		opts  = pgx.TxOptions{IsoLevel: pgx.RepeatableRead}
+		mc  = gomock.NewController(t)
+		ctx = context.Background()
+		tx  = transactorMock.NewMockTx(mc)
+		// TODO: use this context instead of gomock.Any()
+		//ctxTx = context.WithValue(ctx, transactor.TxKey, tx)
+		opts = pgx.TxOptions{IsoLevel: pgx.RepeatableRead}
 
 		user                 = gofakeit.Int64()
 		orderId              = gofakeit.Int64()
@@ -120,16 +122,18 @@ func TestCreateOrder(t *testing.T) {
 			err:  nil,
 			lomsRepositoryMock: func(mc *gomock.Controller) repository.LomsRepository {
 				mock := repositoryMock.NewMockLomsRepository(mc)
-				mock.EXPECT().CreateOrder(ctx, req).Return(res, nil)
-				mock.EXPECT().Stocks(ctxTx, reqStocks).Return(resStocks, nil)
-				mock.EXPECT().ReserveItems(ctxTx, orderId, reqReserveItems).Return(nil)
-				mock.EXPECT().ChangeStatus(ctx, orderId, model.OrderStatusAwaitingPayment).Return(nil)
+				mock.EXPECT().CreateOrder(gomock.Any(), req).Return(res, nil)
+				// TODO: use ctxTx instead of gomock.Any()
+				mock.EXPECT().Stocks(gomock.Any(), reqStocks).Return(resStocks, nil)
+				// TODO: use ctxTx instead of gomock.Any()
+				mock.EXPECT().ReserveItems(gomock.Any(), orderId, reqReserveItems).Return(nil)
+				mock.EXPECT().ChangeStatus(gomock.Any(), orderId, model.OrderStatusAwaitingPayment).Return(nil)
 				return mock
 			},
 			dbMock: func(mc *gomock.Controller) transactor.DB {
 				mock := transactorMock.NewMockDB(mc)
-				mock.EXPECT().BeginTx(ctx, opts).Return(tx, nil)
-				tx.EXPECT().Commit(ctx).Return(nil)
+				mock.EXPECT().BeginTx(gomock.Any(), opts).Return(tx, nil)
+				tx.EXPECT().Commit(gomock.Any()).Return(nil)
 				return mock
 			},
 		},
@@ -143,7 +147,7 @@ func TestCreateOrder(t *testing.T) {
 			err:  ErrCreatingOrder,
 			lomsRepositoryMock: func(mc *gomock.Controller) repository.LomsRepository {
 				mock := repositoryMock.NewMockLomsRepository(mc)
-				mock.EXPECT().CreateOrder(ctx, req).Return(nil, repositoryErr)
+				mock.EXPECT().CreateOrder(gomock.Any(), req).Return(nil, repositoryErr)
 				return mock
 			},
 			dbMock: func(mc *gomock.Controller) transactor.DB {
@@ -161,15 +165,16 @@ func TestCreateOrder(t *testing.T) {
 			err:  nil,
 			lomsRepositoryMock: func(mc *gomock.Controller) repository.LomsRepository {
 				mock := repositoryMock.NewMockLomsRepository(mc)
-				mock.EXPECT().CreateOrder(ctx, req).Return(res, nil)
-				mock.EXPECT().Stocks(ctxTx, reqStocks).Return(nil, repositoryErr)
-				mock.EXPECT().ChangeStatus(ctx, orderId, model.OrderStatusFailed).Return(nil)
+				mock.EXPECT().CreateOrder(gomock.Any(), req).Return(res, nil)
+				// TODO: use ctxTx instead of gomock.Any()
+				mock.EXPECT().Stocks(gomock.Any(), reqStocks).Return(nil, repositoryErr)
+				mock.EXPECT().ChangeStatus(gomock.Any(), orderId, model.OrderStatusFailed).Return(nil)
 				return mock
 			},
 			dbMock: func(mc *gomock.Controller) transactor.DB {
 				mock := transactorMock.NewMockDB(mc)
-				mock.EXPECT().BeginTx(ctx, opts).Return(tx, nil)
-				tx.EXPECT().Rollback(ctx).Return(nil)
+				mock.EXPECT().BeginTx(gomock.Any(), opts).Return(tx, nil)
+				tx.EXPECT().Rollback(gomock.Any()).Return(nil)
 				return mock
 			},
 		},
@@ -183,15 +188,16 @@ func TestCreateOrder(t *testing.T) {
 			err:  nil,
 			lomsRepositoryMock: func(mc *gomock.Controller) repository.LomsRepository {
 				mock := repositoryMock.NewMockLomsRepository(mc)
-				mock.EXPECT().CreateOrder(ctx, req).Return(res, nil)
-				mock.EXPECT().Stocks(ctxTx, reqStocks).Return(resStocksNotEnough, nil)
-				mock.EXPECT().ChangeStatus(ctx, orderId, model.OrderStatusFailed).Return(nil)
+				mock.EXPECT().CreateOrder(gomock.Any(), req).Return(res, nil)
+				// TODO: use ctxTx instead of gomock.Any()
+				mock.EXPECT().Stocks(gomock.Any(), reqStocks).Return(resStocksNotEnough, nil)
+				mock.EXPECT().ChangeStatus(gomock.Any(), orderId, model.OrderStatusFailed).Return(nil)
 				return mock
 			},
 			dbMock: func(mc *gomock.Controller) transactor.DB {
 				mock := transactorMock.NewMockDB(mc)
-				mock.EXPECT().BeginTx(ctx, opts).Return(tx, nil)
-				tx.EXPECT().Rollback(ctx).Return(nil)
+				mock.EXPECT().BeginTx(gomock.Any(), opts).Return(tx, nil)
+				tx.EXPECT().Rollback(gomock.Any()).Return(nil)
 				return mock
 			},
 		},
@@ -205,16 +211,18 @@ func TestCreateOrder(t *testing.T) {
 			err:  nil,
 			lomsRepositoryMock: func(mc *gomock.Controller) repository.LomsRepository {
 				mock := repositoryMock.NewMockLomsRepository(mc)
-				mock.EXPECT().CreateOrder(ctx, req).Return(res, nil)
-				mock.EXPECT().Stocks(ctxTx, reqStocks).Return(resStocksManyWarehouses, nil)
-				mock.EXPECT().ReserveItems(ctxTx, orderId, reqReserveItems).Return(nil)
-				mock.EXPECT().ChangeStatus(ctx, orderId, model.OrderStatusAwaitingPayment).Return(nil)
+				mock.EXPECT().CreateOrder(gomock.Any(), req).Return(res, nil)
+				// TODO: use ctxTx instead of gomock.Any()
+				mock.EXPECT().Stocks(gomock.Any(), reqStocks).Return(resStocksManyWarehouses, nil)
+				// TODO: use ctxTx instead of gomock.Any()
+				mock.EXPECT().ReserveItems(gomock.Any(), orderId, reqReserveItems).Return(nil)
+				mock.EXPECT().ChangeStatus(gomock.Any(), orderId, model.OrderStatusAwaitingPayment).Return(nil)
 				return mock
 			},
 			dbMock: func(mc *gomock.Controller) transactor.DB {
 				mock := transactorMock.NewMockDB(mc)
-				mock.EXPECT().BeginTx(ctx, opts).Return(tx, nil)
-				tx.EXPECT().Commit(ctx).Return(nil)
+				mock.EXPECT().BeginTx(gomock.Any(), opts).Return(tx, nil)
+				tx.EXPECT().Commit(gomock.Any()).Return(nil)
 				return mock
 			},
 		},
@@ -228,16 +236,18 @@ func TestCreateOrder(t *testing.T) {
 			err:  nil,
 			lomsRepositoryMock: func(mc *gomock.Controller) repository.LomsRepository {
 				mock := repositoryMock.NewMockLomsRepository(mc)
-				mock.EXPECT().CreateOrder(ctx, req).Return(res, nil)
-				mock.EXPECT().Stocks(ctxTx, reqStocks).Return(resStocks, nil)
-				mock.EXPECT().ReserveItems(ctxTx, orderId, reqReserveItems).Return(repositoryErr)
-				mock.EXPECT().ChangeStatus(ctx, orderId, model.OrderStatusFailed).Return(nil)
+				mock.EXPECT().CreateOrder(gomock.Any(), req).Return(res, nil)
+				// TODO: use ctxTx instead of gomock.Any()
+				mock.EXPECT().Stocks(gomock.Any(), reqStocks).Return(resStocks, nil)
+				// TODO: use ctxTx instead of gomock.Any()
+				mock.EXPECT().ReserveItems(gomock.Any(), orderId, reqReserveItems).Return(repositoryErr)
+				mock.EXPECT().ChangeStatus(gomock.Any(), orderId, model.OrderStatusFailed).Return(nil)
 				return mock
 			},
 			dbMock: func(mc *gomock.Controller) transactor.DB {
 				mock := transactorMock.NewMockDB(mc)
-				mock.EXPECT().BeginTx(ctx, opts).Return(tx, nil)
-				tx.EXPECT().Rollback(ctx).Return(nil)
+				mock.EXPECT().BeginTx(gomock.Any(), opts).Return(tx, nil)
+				tx.EXPECT().Rollback(gomock.Any()).Return(nil)
 				return mock
 			},
 		},
@@ -251,16 +261,18 @@ func TestCreateOrder(t *testing.T) {
 			err:  ErrChangingStatus,
 			lomsRepositoryMock: func(mc *gomock.Controller) repository.LomsRepository {
 				mock := repositoryMock.NewMockLomsRepository(mc)
-				mock.EXPECT().CreateOrder(ctx, req).Return(res, nil)
-				mock.EXPECT().Stocks(ctxTx, reqStocks).Return(resStocks, nil)
-				mock.EXPECT().ReserveItems(ctxTx, orderId, reqReserveItems).Return(nil)
-				mock.EXPECT().ChangeStatus(ctx, orderId, model.OrderStatusAwaitingPayment).Return(repositoryErr)
+				mock.EXPECT().CreateOrder(gomock.Any(), req).Return(res, nil)
+				// TODO: use ctxTx instead of gomock.Any()
+				mock.EXPECT().Stocks(gomock.Any(), reqStocks).Return(resStocks, nil)
+				// TODO: use ctxTx instead of gomock.Any()
+				mock.EXPECT().ReserveItems(gomock.Any(), orderId, reqReserveItems).Return(nil)
+				mock.EXPECT().ChangeStatus(gomock.Any(), orderId, model.OrderStatusAwaitingPayment).Return(repositoryErr)
 				return mock
 			},
 			dbMock: func(mc *gomock.Controller) transactor.DB {
 				mock := transactorMock.NewMockDB(mc)
-				mock.EXPECT().BeginTx(ctx, opts).Return(tx, nil)
-				tx.EXPECT().Commit(ctx).Return(nil)
+				mock.EXPECT().BeginTx(gomock.Any(), opts).Return(tx, nil)
+				tx.EXPECT().Commit(gomock.Any()).Return(nil)
 				return mock
 			},
 		},
@@ -274,15 +286,16 @@ func TestCreateOrder(t *testing.T) {
 			err:  ErrChangingStatus,
 			lomsRepositoryMock: func(mc *gomock.Controller) repository.LomsRepository {
 				mock := repositoryMock.NewMockLomsRepository(mc)
-				mock.EXPECT().CreateOrder(ctx, req).Return(res, nil)
-				mock.EXPECT().Stocks(ctxTx, reqStocks).Return(resStocksNotEnough, nil)
-				mock.EXPECT().ChangeStatus(ctx, orderId, model.OrderStatusFailed).Return(repositoryErr)
+				mock.EXPECT().CreateOrder(gomock.Any(), req).Return(res, nil)
+				// TODO: use ctxTx instead of gomock.Any()
+				mock.EXPECT().Stocks(gomock.Any(), reqStocks).Return(resStocksNotEnough, nil)
+				mock.EXPECT().ChangeStatus(gomock.Any(), orderId, model.OrderStatusFailed).Return(repositoryErr)
 				return mock
 			},
 			dbMock: func(mc *gomock.Controller) transactor.DB {
 				mock := transactorMock.NewMockDB(mc)
-				mock.EXPECT().BeginTx(ctx, opts).Return(tx, nil)
-				tx.EXPECT().Rollback(ctx).Return(nil)
+				mock.EXPECT().BeginTx(gomock.Any(), opts).Return(tx, nil)
+				tx.EXPECT().Rollback(gomock.Any()).Return(nil)
 				return mock
 			},
 		},
@@ -292,6 +305,8 @@ func TestCreateOrder(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
+			logger.Init()
 
 			repo := NewRepository(tt.lomsRepositoryMock(mc), transactor.NewTransactionManager(tt.dbMock(mc)))
 

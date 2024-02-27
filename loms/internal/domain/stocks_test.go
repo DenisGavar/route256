@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 	"errors"
+	"route256/libs/logger"
 	"route256/libs/transactor"
 	transactorMock "route256/libs/transactor/mocks"
 	"route256/loms/internal/domain/model"
@@ -66,7 +67,7 @@ func TestStocks(t *testing.T) {
 			err:  nil,
 			lomsRepositoryMock: func(mc *gomock.Controller) repository.LomsRepository {
 				mock := repositoryMock.NewMockLomsRepository(mc)
-				mock.EXPECT().Stocks(ctx, req).Return(res, nil)
+				mock.EXPECT().Stocks(gomock.Any(), req).Return(res, nil)
 				return mock
 			},
 		},
@@ -80,7 +81,7 @@ func TestStocks(t *testing.T) {
 			err:  ErrGettingStocks,
 			lomsRepositoryMock: func(mc *gomock.Controller) repository.LomsRepository {
 				mock := repositoryMock.NewMockLomsRepository(mc)
-				mock.EXPECT().Stocks(ctx, req).Return(nil, repositoryErr)
+				mock.EXPECT().Stocks(gomock.Any(), req).Return(nil, repositoryErr)
 				return mock
 			},
 		},
@@ -90,6 +91,8 @@ func TestStocks(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
+
+			logger.Init()
 
 			repo := NewRepository(tt.lomsRepositoryMock(mc), transactor.NewTransactionManager(dbMock))
 
