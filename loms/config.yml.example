@@ -1,21 +1,21 @@
 services:
   loms:
-    name: ""
-    port: ""
-    prometheusPort: ""
+    name: "loms"
+    port: ":8081"
+    prometheusPort: ":8071"
   cancelOrderDaemon:
-    workersCount: 
-    cancelOrderTimeInMinutes:     
+    workersCount: 5
+    cancelOrderTimeInMinutes: 1
   lomsPgBouncer:
-    host: ""
-    port: ""
-    userDB: ""
-    passwordDB: ""
-    nameDB: ""
+    host: "pgbouncer-loms"
+    port: "6432"
+    userDB: "user"
+    passwordDB: "password"
+    nameDB: "loms"
   kafka:
-    workersCount: 
-    topicForOrders: ""
+    workersCount: 5
+    topicForOrders: "orders"
     brokers:
-      - ""
-      - ""
-      - ""
+      - "kafka1:29091"
+      - "kafka2:29092"
+      - "kafka3:29094"

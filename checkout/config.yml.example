@@ -1,21 +1,21 @@
 services:
   loms:
-    address: ""
+    address: "loms:8081"
   productService:
-    address: ""
-    token: ""
-    listCartWorkersCount: 
-    rateLimit: 
-    cacheCapacity: 
-    cacheTTLInSeconds: 
+    address: "route256.pavl.uk:8082"
+    token: "testtoken"
+    listCartWorkersCount: 5
+    rateLimit: 5
+    cacheCapacity: 10
+    cacheTTLInSeconds: 30
   checkout:
-    name: ""
-    httpPort: ""
-    grpcPort: ""
-    prometheusPort: ""
+    name: "checkout"
+    httpPort: ":8090"
+    grpcPort: ":8080"
+    prometheusPort: ":8070"
   checkoutPgBouncer:
-    host: ""
-    port: ""
-    userDB: ""
-    passwordDB: ""
-    nameDB: ""
+    host: "pgbouncer-checkout"
+    port: "6433"
+    userDB: "user"
+    passwordDB: "password"
+    nameDB: "checkout"
