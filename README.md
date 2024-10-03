@@ -34,8 +34,12 @@ To run the project:
 
 4. Apply migrations:
     ```sh
-    ./checkout/migration.sh
-    ./loms/migration.sh
+    cd checkout
+    ./migration.sh
+    cd ..
+    cd loms
+    ./migration.sh
+    cd ..
     ```
 
 ## Configuration
