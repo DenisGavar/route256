@@ -10,6 +10,11 @@
 - **Checkout Service**: Handles customer orders and payment processing.
 - **LOMS Service**: Manages logistics and order fulfillment.
 
+## Contracts
+
+- **[Russian](./contracts.ru.md)**
+- **[English](./contracts.en.md)**
+
 ## Getting Started
 
 To run the project:
@@ -49,7 +54,7 @@ To run the project:
 
 ## Usage
 
-The application includes various handlers and daemons for managing checkout processes, logistics, and monitoring. Currently, more detailed usage instructions are available in `contracts.md` (in Russian).
+The application includes various handlers and daemons for managing checkout processes, logistics, and monitoring. Currently, more detailed usage instructions and application flow are available in [contracts.ru.md](./contracts.ru.md) (in Russian) and [contracts.en.md](./contracts.en.md) (in English).
 
 ## Technologies
 
@@ -60,6 +65,5 @@ The application includes various handlers and daemons for managing checkout proc
 
 ## TODO
 
-- Translate all handler and daemon descriptions to English.
-- Document addresses for services like Prometheus, Alertmanager, Kafka, Grafana, Jaeger, and databases.
+- Document addresses for services like Prometheus, Alertmanager, Kafka, Grafana, Jaeger, GRPC and databases.
 
